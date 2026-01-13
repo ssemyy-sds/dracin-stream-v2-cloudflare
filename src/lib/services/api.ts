@@ -159,14 +159,15 @@ export async function getDramaDetail(bookId: string): Promise<Drama> {
 
         // Fallback: If search fails, return a basic drama object
         return {
-            id: bookId,
-            title: `Drama ${bookId}`,
-            poster: '',
-            synopsis: 'Description not available',
+            bookId: bookId,
+            bookName: `Drama ${bookId}`,
+            cover: '',
+            introduction: 'Description not available',
             genres: [],
             status: 'Ongoing',
-            totalEpisodes: 0,
-            episodes: []
+            year: new Date().getFullYear(),
+            latestEpisode: 0,
+            rating: 0
         };
     }
 
