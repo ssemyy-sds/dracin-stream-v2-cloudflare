@@ -1,0 +1,19 @@
+name = "dracin-api-bot"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+account_id = "3cf989fc32f0e3a840fd0cd785d75be1"
+
+[vars]
+ADMIN_CHAT_ID = "179629482"
+TELEGRAM_BOT_TOKEN = "8480424171:AAEMOqgaU-BZhdB86MC1K4eny6y9f6bQFNU"
+
+[[kv_namespaces]]
+binding = "API_CONFIG"
+id = "628f407be7194841861f526e3a421ec0"
+
+[env.production]
+vars = { ADMIN_CHAT_ID = "179629482", TELEGRAM_BOT_TOKEN = "8480424171:AAEMOqgaU-BZhdB86MC1K4eny6y9f6bQFNU" }
+
+[[env.production.kv_namespaces]]
+binding = "API_CONFIG"
+id = "628f407be7194841861f526e3a421ec0"
