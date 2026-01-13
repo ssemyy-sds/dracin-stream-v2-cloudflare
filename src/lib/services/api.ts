@@ -143,6 +143,33 @@ export async function getDramaDetail(bookId: string): Promise<Drama> {
         }
     }
 
+    if (providerId === 'api_backup2') {
+        // Hybrid fetch for Backup 2:
+        // Metadata from Search (simulating Home detail)
+        try {
+            const searchRes = await fetchApi('search', { query: bookId });
+            const list = getList(searchRes.data);
+
+            if (Array.isArray(list) && list.length > 0) {
+                return normalizeDrama(list[0], providerId);
+            }
+        } catch (e) {
+            console.warn('[API] Backup2 search metadata failed');
+        }
+
+        // Fallback: If search fails, return a basic drama object
+        return {
+            id: bookId,
+            title: `Drama ${bookId}`,
+            poster: '',
+            synopsis: 'Description not available',
+            genres: [],
+            status: 'Ongoing',
+            totalEpisodes: 0,
+            episodes: []
+        };
+    }
+
     // Handle secondary API wrapper: { data: {...}, success: true }
     const dramaData = data?.data || data;
     return normalizeDrama(dramaData, providerId);
