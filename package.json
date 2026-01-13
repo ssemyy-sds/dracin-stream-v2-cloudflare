@@ -6,7 +6,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "git-push": "C:\\Users\\suryanata\\AppData\\Local\\GitHubDesktop\\app-3.5.4\\resources\\app\\git\\cmd\\git.exe add . && C:\\Users\\suryanata\\AppData\\Local\\GitHubDesktop\\app-3.5.4\\resources\\app\\git\\cmd\\git.exe commit -m \"Update\" && C:\\Users\\suryanata\\AppData\\Local\\GitHubDesktop\\app-3.5.4\\resources\\app\\git\\cmd\\git.exe push"
   },
   "devDependencies": {
     "@sveltejs/adapter-cloudflare": "^4.7.4",
