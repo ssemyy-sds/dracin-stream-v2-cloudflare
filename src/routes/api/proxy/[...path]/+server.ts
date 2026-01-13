@@ -125,8 +125,8 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
                 'vip': '/api/vip',
                 'search': '/api/search',
                 'detail': '/download',
-                'allepisode': '/api/download',
-                'stream': '/api/download',
+                'allepisode': '/download',
+                'stream': '/download',
                 'categories': '/api/categories'
             };
 
@@ -137,8 +137,8 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
             if (keyword) paxParams.set('keyword', keyword); // Paxsenix uses 'keyword' not 'query'
             if (page && page !== '1') paxParams.set('page', page);
 
-            // SPECIAL CASE: Path parameter for /download detail endpoint
-            if (actionPath === 'detail' && bookId) {
+            // SPECIAL CASE: Path parameter for /download endpoints (detail, allepisode, stream)
+            if (['detail', 'allepisode', 'stream'].includes(actionPath) && bookId) {
                 mappedPath = `${mappedPath}/${bookId}`;
                 // bookId is in path, no need for query param
             } else if (bookId) {
