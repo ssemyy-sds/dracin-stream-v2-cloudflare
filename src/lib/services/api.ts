@@ -118,19 +118,6 @@ async function fetchApi(endpoint: string, params: Record<string, string> = {}): 
     } catch (error: any) {
         console.error(`[API Service] Fetch failed for ${endpoint}:`, error.message);
 
-        // Fallback Logic: Try Backup 1 if validation failed or network error, AND no specific provider was requested
-        if (!params.provider) {
-            const backupId = 'api_backup1';
-            console.warn(`[API] Default provider failed, trying fallback: ${backupId}`);
-            try {
-                const newParams = { ...params, provider: backupId };
-                const newQuery = new URLSearchParams(newParams).toString();
-                const fallbackUrl = `${API_BASE}/${endpoint}${newQuery ? '?' + newQuery : ''}`;
-                return await internalFetch(fallbackUrl, endpoint);
-            } catch (fallbackError: any) {
-                console.error(`[API Service] Fallback to ${backupId} also failed:`, fallbackError.message);
-            }
-        }
 
         throw error;
     }

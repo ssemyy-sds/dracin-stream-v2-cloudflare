@@ -70,27 +70,26 @@ export default {
             }
 
             return new Response('OK');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error:', error);
-            return new Response('Error processing request', { status: 500 });
+            return new Response(`Error processing request: ${error.message || error}`, { status: 500 });
         }
     }
 };
 
 async function sendMessage(env: Env, chatId: string, text: string): Promise<void> {
-    try {
-        const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: text,
-                parse_mode: 'HTML'
-            })
-        });
-    } catch (err) {
-        console.error('Failed to send telegram message:', err);
+    const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            chat_id: chatId,
+            text: text,
+            parse_mode: 'HTML'
+        })
+    });
+    if (!res.ok) {
+        throw new Error(`Telegram API Error: ${res.status} ${res.statusText} - ${await res.text()}`);
     }
 }
 
@@ -100,27 +99,27 @@ async function sendMessageWithKeyboard(
     text: string,
     keyboard?: InlineKeyboard
 ): Promise<void> {
-    try {
-        const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
-        const body: any = {
-            chat_id: chatId,
-            text: text,
-            parse_mode: 'HTML'
+    const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const body: any = {
+        chat_id: chatId,
+        text: text,
+        parse_mode: 'HTML'
+    };
+
+    if (keyboard && keyboard.length > 0) {
+        body.reply_markup = {
+            inline_keyboard: keyboard
         };
+    }
 
-        if (keyboard && keyboard.length > 0) {
-            body.reply_markup = {
-                inline_keyboard: keyboard
-            };
-        }
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    });
 
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-    } catch (err) {
-        console.error('Failed to send telegram message:', err);
+    if (!res.ok) {
+        throw new Error(`Telegram API Error: ${res.status} ${res.statusText} - ${await res.text()}`);
     }
 }
 
@@ -129,17 +128,13 @@ async function answerCallbackQuery(
     callbackQueryId: string,
     text?: string
 ): Promise<void> {
-    try {
-        const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`;
-        await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                callback_query_id: callbackQueryId,
-                text: text
-            })
-        });
-    } catch (err) {
-        console.error('Failed to answer callback query:', err);
-    }
+    const url = `https://api.telegram.org/bot${env.TELEGRAM_BOT_TOKEN}/answerCallbackQuery`;
+    await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            callback_query_id: callbackQueryId,
+            text: text
+        })
+    });
 }
