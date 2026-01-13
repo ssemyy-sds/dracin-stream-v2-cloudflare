@@ -116,7 +116,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
 
         } else if (apiConfig.id === 'api_backup2') {
             // Paxsenix endpoint mapping
-            // User requested mapping detail, allepisode, stream to 'download' endpoint
+            // User requested mapping detail to /download/{bookId}
             const paxsenixMap: Record<string, string> = {
                 'home': '/api/home',
                 'trending': '/api/recommend',
@@ -124,21 +124,27 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
                 'foryou': '/api/home',
                 'vip': '/api/vip',
                 'search': '/api/search',
-                'detail': '/api/download',
+                'detail': '/download',
                 'allepisode': '/api/download',
                 'stream': '/api/download',
                 'categories': '/api/categories'
             };
 
-            const mappedPath = paxsenixMap[actionPath] || `/api/${actionPath}`;
+            let mappedPath = paxsenixMap[actionPath] || `/api/${actionPath}`;
 
             // Build query params for Paxsenix
             const paxParams = new URLSearchParams();
             if (keyword) paxParams.set('keyword', keyword); // Paxsenix uses 'keyword' not 'query'
             if (page && page !== '1') paxParams.set('page', page);
 
-            // For download endpoint, pass bookId/chapterId as query params
-            if (bookId) paxParams.set('bookId', bookId);
+            // SPECIAL CASE: Path parameter for /download detail endpoint
+            if (actionPath === 'detail' && bookId) {
+                mappedPath = `${mappedPath}/${bookId}`;
+                // bookId is in path, no need for query param
+            } else if (bookId) {
+                paxParams.set('bookId', bookId);
+            }
+
             if (chapterId) paxParams.set('chapterId', chapterId);
 
             const paxQuery = paxParams.toString();
