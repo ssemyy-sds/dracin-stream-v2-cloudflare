@@ -1,3 +1,3 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 
-export const activeProvider = writable<string>('Unknown');
+export const activeProvider = writable<string>('api_backup2');

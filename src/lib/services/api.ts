@@ -1,3 +1,4 @@
+import { get } from 'svelte/store';
 import type {
     Drama,
     Episode,
@@ -129,12 +130,36 @@ async function fetchApi(endpoint: string, params: Record<string, string> = {}): 
  * Get drama details by ID
  */
 export async function getDramaDetail(bookId: string): Promise<Drama> {
-    // Try detail endpoint first
+    // OPTIMIZATION: Check if we can use a faster metadata strategy based on active provider
+    // This avoids blocking on slow 'detail' endpoints (like /download/...) when we just need metadata
+    let currentProvider = '';
+    try {
+        currentProvider = get(activeProvider);
+    } catch (e) { /* ignore if store not ready */ }
+
+    if (currentProvider === 'api_secondary' || currentProvider === 'api_backup2') {
+        try {
+            debugLog(`[Optimization] Fast metadata fetch using search for ${currentProvider}`);
+            const searchRes = await fetchApi('search', { query: bookId });
+            const list = getList(searchRes.data);
+
+            if (Array.isArray(list) && list.length > 0) {
+                // Return the first match immediately
+                return normalizeDrama(list[0], currentProvider);
+            }
+        } catch (e) {
+            console.warn('[API] Fast metadata fetch failed, falling back to standard flow', e);
+        }
+    }
+
+    // Standard flow: Try detail endpoint first
     let { data, providerId } = await fetchApi('detail', { bookId });
 
     // For Secondary API, 'detail' only returns chapters. 
     // We need to fetch metadata from 'search' action using the ID.
     if (providerId === 'api_secondary') {
+        // If we are here, it means the optimization above didn't run (maybe provider was unknown)
+        // or failed. So we MUST run search now.
         const searchRes = await fetchApi('search', { query: bookId });
         const list = searchRes.data?.data || searchRes.data || [];
         if (Array.isArray(list) && list.length > 0) {
@@ -171,7 +196,7 @@ export async function getDramaDetail(bookId: string): Promise<Drama> {
         };
     }
 
-    // Handle secondary API wrapper: { data: {...}, success: true }
+    // Handle standard/primary API wrapper: { data: {...}, success: true }
     const dramaData = data?.data || data;
     return normalizeDrama(dramaData, providerId);
 }

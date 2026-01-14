@@ -69,7 +69,7 @@ export const API_CONFIGS: APIConfig[] = [
         id: 'api_secondary',
         name: 'Secondary API (Gimita)',
         baseUrl: 'https://api.gimita.id/api/search/dramabox',
-        priority: 2,
+        priority: 4,
         queryFormat: 'action',
         endpoints: {
             home: 'home',
@@ -132,7 +132,7 @@ export const API_CONFIGS: APIConfig[] = [
         id: 'api_backup2',
         name: 'Backup API 2 (Paxsenix)',
         baseUrl: 'https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app',
-        priority: 4,
+        priority: 1,
         queryFormat: 'path',
         endpoints: {
             home: '/api/home',
@@ -161,8 +161,8 @@ export const API_CONFIGS: APIConfig[] = [
     }
 ];
 
-// Default to secondary since primary blocks Cloudflare
-export const DEFAULT_API_ID = 'api_secondary';
+// Default to backup2 since others are down
+export const DEFAULT_API_ID = 'api_backup2';
 
 // Helper function to get API config by ID
 export function getAPIConfig(apiId: string): APIConfig | undefined {
