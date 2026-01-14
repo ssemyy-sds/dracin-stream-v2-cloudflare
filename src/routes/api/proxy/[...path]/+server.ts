@@ -235,6 +235,59 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
             'X-Active-Provider': apiConfig.id
         });
 
+        // OPTIMIZATION: Filter payload if mode=list is requested
+        // This reduces 13MB+ payloads to <100KB by removing video details
+        const mode = url.searchParams.get('mode');
+        if (mode === 'list' && (actionPath === 'allepisode' || actionPath === 'chapters' || actionPath === 'download')) {
+            console.log('[API Proxy] Mode=list active, stripping video data...');
+
+            let list: any[] = [];
+
+            // Standardize list extraction
+            if (Array.isArray(data)) {
+                list = data;
+            } else if (data.data && Array.isArray(data.data)) {
+                list = data.data;
+            } else if (data.data && data.data.chapters && Array.isArray(data.data.chapters)) {
+                list = data.data.chapters;
+            } else if (data.chapters && Array.isArray(data.chapters)) {
+                list = data.chapters;
+            }
+
+            if (list.length > 0) {
+                // Map to lightweight structure
+                const lightweightList = list.map((item: any) => ({
+                    // Keep IDs and basic info
+                    chapterId: item.chapterId || item.chapterid || item.id,
+                    chapterIndex: item.chapterIndex || item.index,
+                    chapterName: item.chapterName || item.name || item.title,
+                    cover: item.cover || item.coverUrl,
+
+                    // Explicitly REMOVE heavy video fields
+                    // We don't need to do anything as map creates new object, 
+                    // but just to be clear what we are saving:
+                    // - cdnList (HUGE)
+                    // - videoPathList
+                    // - videoPath
+                }));
+
+                // Replace data with lightweight version
+                // Preserving envelope structure if it exists
+                if (Array.isArray(data)) {
+                    // If root was array, return array
+                    return new Response(JSON.stringify(lightweightList), {
+                        status: response.status,
+                        headers: responseHeaders
+                    });
+                } else if (data.data && Array.isArray(data.data)) {
+                    data.data = lightweightList;
+                } else {
+                    // Default fallback
+                    data.data = lightweightList;
+                }
+            }
+        }
+
         return new Response(JSON.stringify(data), {
             status: response.status,
             headers: responseHeaders

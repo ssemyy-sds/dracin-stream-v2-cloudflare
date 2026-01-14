@@ -130,7 +130,7 @@
 
             if (cached) {
                 // If we have cached episodes, we can skip fetching them
-                episodesData = cached.episodes;
+                episodes = cached.episodes;
 
                 // Fetch only drama details
                 const dramaData = await getDramaDetail(bookId);
@@ -152,23 +152,30 @@
                             chapterName: `Episode ${i + 1}`,
                             videoUrl: "",
                             qualityOptions: [],
+                            chapterIndex: i + 1,
                         }));
                 }
 
                 // Unblock UI immediately
                 isLoading = false;
 
-                // Then fetch the heavy episode list (which includes video streams)
+                // Then fetch the episode list (NOW LIGHTWEIGHT!)
+                // This should be fast (< 1s)
                 try {
                     loadingPromise = getAllEpisodes(bookId);
                     const fetchedEpisodes = await loadingPromise;
-                    episodes = fetchedEpisodes;
-                    cachedEpisodes.set(bookId, fetchedEpisodes);
 
-                    // Now that we have real video URLs, load the requested episode
+                    // Update episodes with real data (IDs, names)
+                    // We merge with placeholders if needed, but usually just replace
+                    if (fetchedEpisodes.length > 0) {
+                        episodes = fetchedEpisodes;
+                        cachedEpisodes.set(bookId, fetchedEpisodes);
+                    }
+
+                    // Now that we have real chapterIds, we can load the video
                     await loadEpisode(currentEpisode);
                 } catch (e) {
-                    console.error("Background episode fetch failed:", e);
+                    console.error("Episode fetch failed:", e);
                     error = "Failed to load episodes";
                 }
             }
@@ -177,9 +184,9 @@
                 currentEpisode = parseInt(episodeParam) || 1;
             }
 
-            // Load the video immediately (shows video spinner while loading stream)
-            // Works for both cached (fast) and non-cached (virtual) scenarios
-            if (episodes.length > 0) {
+            // Load the video immediately if we already had cached episodes
+            // If not, the 'await loadingPromise' block above handles it
+            if (cached && episodes.length > 0) {
                 await loadEpisode(currentEpisode);
             }
         } catch (err) {
@@ -194,21 +201,21 @@
         isVideoLoading = true;
 
         try {
-            // Check if current episode in list already has videoUrl (cached from big fetch)
             const epIndex = Math.max(0, epNum - 1);
             const currentEpData = episodes[epIndex];
 
             let options: QualityOption[] = [];
 
+            // 1. Check if we already have quality options in memory (e.g. from previous view)
             if (
                 currentEpData &&
                 currentEpData.qualityOptions &&
                 currentEpData.qualityOptions.length > 0
             ) {
-                // Use cached quality options directly!
                 options = currentEpData.qualityOptions;
-            } else if (currentEpData && currentEpData.videoUrl) {
-                // Use cached default videoUrl
+            }
+            // 2. Check if we have a direct videoUrl
+            else if (currentEpData && currentEpData.videoUrl) {
                 options = [
                     {
                         quality: 720,
@@ -216,35 +223,60 @@
                         isDefault: true,
                     },
                 ];
-            } else if (loadingPromise) {
-                // Optimization: Reuse the in-flight background request
+            }
+            // 3. Needs fetch. Use chapterId if available (Optimized Path)
+            else if (
+                currentEpData &&
+                currentEpData.chapterId &&
+                !currentEpData.chapterId.startsWith("virtual")
+            ) {
+                console.log(
+                    `Loading stream for episode ${epNum} (ID: ${currentEpData.chapterId})`,
+                );
+                options = await getStreamUrl(
+                    bookId,
+                    epNum,
+                    currentEpData.chapterId,
+                );
+
+                // Cache result in the episode object to avoid refetching
+                if (options.length > 0) {
+                    episodes[epIndex].qualityOptions = options;
+                    episodes[epIndex].videoUrl = options[0].videoUrl;
+                }
+            }
+            // 4. If we are still waiting for the filtered list...
+            else if (loadingPromise) {
                 try {
                     const allEpisodes = await loadingPromise;
                     const cachedEp = allEpisodes[epIndex];
 
-                    if (
-                        cachedEp &&
-                        (cachedEp.qualityOptions?.length > 0 ||
-                            cachedEp.videoUrl)
-                    ) {
-                        options =
-                            cachedEp.qualityOptions?.length > 0
-                                ? cachedEp.qualityOptions
-                                : [
-                                      {
-                                          quality: 720,
-                                          videoUrl: cachedEp.videoUrl,
-                                          isDefault: true,
-                                      },
-                                  ];
+                    if (cachedEp && cachedEp.chapterId) {
+                        options = await getStreamUrl(
+                            bookId,
+                            epNum,
+                            cachedEp.chapterId,
+                        );
+                        // Cache
+                        if (options.length > 0) {
+                            // Update the main episodes list if it hasn't been replaced yet?
+                            // Actually loadingPromise sets 'episodes', so we just need to update that reference
+                            // if it matches?
+                            // Better: loadingPromise handler above already set 'episodes' global.
+                            // So we might just read from global 'episodes' again?
+                            if (episodes[epIndex]) {
+                                episodes[epIndex].qualityOptions = options;
+                            }
+                        }
                     } else {
+                        // Fallback (unlikely)
                         options = await getStreamUrl(bookId, epNum);
                     }
                 } catch (e) {
                     options = await getStreamUrl(bookId, epNum);
                 }
             } else {
-                // Fallback to fetching stream URL individually
+                // Fallback to fetching stream URL individually (legacy)
                 options = await getStreamUrl(bookId, epNum);
             }
 

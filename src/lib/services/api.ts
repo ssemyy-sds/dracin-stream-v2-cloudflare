@@ -203,9 +203,14 @@ export async function getDramaDetail(bookId: string): Promise<Drama> {
 
 /**
  * Get all episodes for a drama
+ * Uses 'mode=list' optimization to avoid downloading video details
  */
 export async function getAllEpisodes(bookId: string): Promise<Episode[]> {
-    const { data, providerId } = await fetchApi('allepisode', { bookId });
+    // Add mode=list to get lightweight response (no video data)
+    const { data, providerId } = await fetchApi('allepisode', {
+        bookId,
+        mode: 'list'
+    });
 
     // Handle secondary API wrapper: { data: [...], success: true }
     const episodeList = Array.isArray(data) ? data : (data?.data || []);
@@ -220,81 +225,111 @@ export async function getAllEpisodes(bookId: string): Promise<Episode[]> {
 
 /**
  * Get video stream URL for an episode
- * Handles both providers:
- * 1. Primary: Video info embedded in 'allepisode'
- * 2. Secondary: Needs separate 'stream' call using chapterId
+ * optimized to fetch specific stream if chapterId is available
  */
-export async function getStreamUrl(bookId: string, episodeNum: number): Promise<QualityOption[]> {
-    // 1. Fetch episode list first (unified approach)
-    // We reuse getAllEpisodes logic but need raw data + provider to decide next step
-    const { data, providerId } = await fetchApi('allepisode', { bookId });
+export async function getStreamUrl(bookId: string, episodeNum: number, chapterId?: string): Promise<QualityOption[]> {
+    // Optimization: If we have chapterId, fetch stream directly
+    if (chapterId && chapterId !== '' && !chapterId.startsWith('virtual-')) {
+        try {
+            debugLog(`[API] Fetching stream directly for chapterId: ${chapterId}`);
+            const { data: streamData } = await fetchApi('stream', {
+                bookId,
+                chapterId
+            });
 
-    if (!Array.isArray(data) || data.length === 0) {
+            return normalizeStreamResponse(streamData);
+        } catch (e: any) {
+            console.warn(`[API] direct stream fetch failed: ${e.message}, falling back to list`);
+        }
+    }
+
+    // Fallback: Fetch specific episode details (or full list if provider doesn't support specific)
+    // For Backup2/Secondary, often 'detail' or 'stream' needs parameters.
+    // If we don't have chapterId, we might be forced to get the list to find it.
+
+    // We try to fetch the list BUT without mode=list this time to get video data for this specific episode?
+    // Actually, getting full list is too heavy. 
+    // If we don't have chapterId, we can't efficiently get the stream in provided API structure without the list.
+    // So we fetch the list but maybe we can depend on 'stream' endpoint using index? 
+    // Most APIs require chapterId.
+
+    // So we fetch the list to GET the chapterId, then call stream.
+    // But wait, if getAllEpisodes (light) was called, we HAVE the chapterId in the UI.
+    // So this fallback is mostly for when we don't have the list yet?
+
+    const { data, providerId } = await fetchApi('allepisode', { bookId }); // Full fetch (heavy)
+
+    if (!Array.isArray(data) && !data?.data) {
         return [];
     }
 
+    const list = Array.isArray(data) ? data : data.data;
     const episodeIndex = Math.max(0, episodeNum - 1);
-    const episodeData = data[episodeIndex] || data[0];
+    const episodeData = list[episodeIndex];
 
-    // Normalize to see if we already have video
+    if (!episodeData) return [];
+
     const episode = normalizeEpisode(episodeData, providerId);
 
     if (episode.qualityOptions.length > 0) {
         return episode.qualityOptions;
     }
 
-    // If no video, we likely need to fetch specific stream endpoint (Secondary API style)
+    // If still no video, try stream endpoint now that we have chapterId
     if (episode.chapterId) {
         try {
             const { data: streamData } = await fetchApi('stream', {
                 bookId,
                 chapterId: episode.chapterId
             });
+            return normalizeStreamResponse(streamData);
+        } catch (e) { console.error(e); }
+    }
 
-            // Normalize stream data
-            const options: QualityOption[] = [];
+    return [];
+}
 
-            // Secondary API stream structure handling
-            // cdnList logic similar to normalizeEpisode but for stream response
-            if (streamData.cdnList && Array.isArray(streamData.cdnList)) {
-                streamData.cdnList.forEach((cdn: any) => {
-                    if (cdn.videoPathList && Array.isArray(cdn.videoPathList)) {
-                        cdn.videoPathList.forEach((path: any) => {
-                            const url = path.videoPath || path.path || path.url;
-                            if (url) {
-                                let fullUrl = url;
-                                if (cdn.cdnDomain && !url.startsWith('http')) {
-                                    fullUrl = `https://${cdn.cdnDomain}${url.startsWith('/') ? '' : '/'}${url}`;
-                                }
+function normalizeStreamResponse(streamData: any): QualityOption[] {
+    const options: QualityOption[] = [];
 
-                                options.push({
-                                    quality: path.quality || path.definition || 720,
-                                    videoUrl: fixUrl(fullUrl),
-                                    isDefault: false
-                                });
+    // Secondary API stream structure handling
+    if (streamData.cdnList && Array.isArray(streamData.cdnList)) {
+        streamData.cdnList.forEach((cdn: any) => {
+            if (cdn.videoPathList && Array.isArray(cdn.videoPathList)) {
+                cdn.videoPathList.forEach((path: any) => {
+                    const url = path.videoPath || path.path || path.url;
+                    if (url) {
+                        let fullUrl = url;
+                        if (cdn.cdnDomain && !url.startsWith('http')) {
+                            // fullUrl = `https://${cdn.cdnDomain}${url.startsWith('/') ? '' : '/'}${url}`;
+                            // Sometimes cdnDomain doesn't include protocol
+                            fullUrl = url.startsWith('//') ? `https:${url}` : url;
+                            if (!fullUrl.startsWith('http')) {
+                                fullUrl = `https://${cdn.cdnDomain}/${url.replace(/^\/+/, '')}`;
                             }
+                        }
+
+                        options.push({
+                            quality: path.quality || path.definition || 720,
+                            videoUrl: fixUrl(fullUrl),
+                            isDefault: false
                         });
                     }
                 });
             }
-
-            // Create default option if direct url exists
-            if (options.length === 0 && (streamData.videoUrl || streamData.url)) {
-                options.push({
-                    quality: streamData.quality || 720,
-                    videoUrl: fixUrl(streamData.videoUrl || streamData.url),
-                    isDefault: true
-                });
-            }
-
-            return options.sort((a, b) => b.quality - a.quality);
-
-        } catch (e) {
-            console.error('Failed to fetch secondary stream:', e);
-        }
+        });
     }
 
-    return [];
+    // Create default option if direct url exists
+    if (options.length === 0 && (streamData.videoUrl || streamData.url || streamData.videoPath)) {
+        options.push({
+            quality: streamData.quality || 720,
+            videoUrl: fixUrl(streamData.videoUrl || streamData.url || streamData.videoPath),
+            isDefault: true
+        });
+    }
+
+    return options.sort((a, b) => b.quality - a.quality);
 }
 
 /**
