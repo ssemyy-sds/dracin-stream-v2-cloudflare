@@ -22,6 +22,11 @@ export function normalizeDrama(data: any, providerId: string): Drama {
     let drama: Drama = {
         bookId: data.bookId || data.bookid || data.id || '',
         bookName: data.bookName || data.bookname || data.name || '',
+        // User requested fields
+        id: data.bookId || data.bookid || data.id || '',
+        name: data.bookName || data.bookname || data.name || '',
+        tags: Array.isArray(data.tags) ? data.tags.map((t: any) => typeof t === 'string' ? t : (t.tagName || t.name || t)) : (data.genres || []),
+
         cover: fixUrl(data.cover || data.coverUrl || data.coverWap || ''),
         introduction: data.introduction || data.description || '',
         rating: typeof data.rating === 'number' ? data.rating : parseRating(data.score || data.rating || '0'),

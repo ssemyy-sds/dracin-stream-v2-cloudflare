@@ -2,11 +2,16 @@
 export interface Drama {
     bookId: string;
     bookName: string;
+    // User requested aliases
+    id?: string;
+    name?: string;
+    tags?: string[];
+
     cover: string;
     introduction: string;
     rating: number;
     genres: string[];
-    status: 'Ongoing' | 'Completed';
+    status: string;
     year: number;
     latestEpisode: number;
     chapterCount?: number;

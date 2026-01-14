@@ -4,6 +4,7 @@
   import DramaCard from "$lib/components/DramaCard.svelte";
   import { getHome, getRecommend, getVip } from "$lib/services/api";
   import { fixUrl, truncateText } from "$lib/utils/helpers";
+  import { selectedDrama } from "$lib/stores/drama";
   import type { Drama } from "$lib/types";
 
   // Hero carousel data
@@ -23,7 +24,7 @@
       const [home, recommend, vip] = await Promise.all([
         getHome(1, 20),
         getRecommend(1, 20),
-        getVip(1, 20),
+        getVip(1),
       ]);
 
       // Create hero items from home data
@@ -68,6 +69,10 @@
 
   function prevSlide() {
     goToSlide((currentSlide - 1 + heroItems.length) % heroItems.length);
+  }
+
+  function handleHeroClick(item: Drama) {
+    selectedDrama.setSelected(item);
   }
 </script>
 
@@ -182,6 +187,7 @@
                 <div class="flex flex-wrap items-center gap-3 pt-2">
                   <a
                     href="/watch/{item.bookId}"
+                    onclick={() => handleHeroClick(item)}
                     class="inline-flex items-center gap-2 px-6 py-3 bg-brand-orange hover:bg-orange-600 rounded-full font-semibold transition-colors shadow-lg shadow-brand-orange/30"
                   >
                     <Play class="w-5 h-5 fill-white" />
@@ -189,6 +195,7 @@
                   </a>
                   <a
                     href="/detail/{item.bookId}"
+                    onclick={() => handleHeroClick(item)}
                     class="px-6 py-3 glass hover:bg-white/20 rounded-full font-semibold transition-colors"
                   >
                     Detail

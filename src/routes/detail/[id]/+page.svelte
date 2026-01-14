@@ -12,28 +12,39 @@
   } from "lucide-svelte";
   import { getDramaDetail, getAllEpisodes } from "$lib/services/api";
   import { favorites } from "$lib/stores/favorites";
+  import { selectedDrama } from "$lib/stores/drama";
   import { fixUrl, truncateText } from "$lib/utils/helpers";
   import type { Drama, Episode } from "$lib/types";
 
   let bookId = $derived($page.params.id);
 
-  let drama = $state<Drama | null>(null);
+  // Initialize from store if available, otherwise null
+  let drama = $state<Drama | null>($selectedDrama);
   let episodes = $state<Array<Omit<Episode, "videoUrl" | "qualityOptions">>>(
     [],
   );
-  let isLoading = $state(true);
+  // We use $derived for loading state based on drama presence
+  let isFetching = $state(true);
+  let isLoading = $derived(!drama && isFetching);
   let error = $state<string | null>(null);
 
   let isFavorited = $derived(
-    drama ? $favorites.some((f) => f.bookId === drama.bookId) : false,
+    drama ? $favorites.some((f) => f.bookId === drama?.bookId) : false,
   );
 
   $effect(() => {
-    loadDramaData();
+    if (bookId) {
+      loadDramaData();
+    }
   });
 
   async function loadDramaData() {
-    isLoading = true;
+    if (!bookId) return;
+
+    // Only set loading if we don't already have drama data in state
+    if (!drama || drama.bookId !== bookId) {
+      isFetching = true;
+    }
     error = null;
 
     try {
@@ -46,9 +57,12 @@
       episodes = episodesData;
     } catch (err) {
       console.error("Failed to load drama:", err);
-      error = "Failed to load drama details";
+      // If we don't have ANY drama data, then show error
+      if (!drama) {
+        error = "Failed to load drama details";
+      }
     } finally {
-      isLoading = false;
+      isFetching = false;
     }
   }
 
@@ -60,7 +74,7 @@
 </script>
 
 <svelte:head>
-  <title>{drama?.bookName || "Loading..."} - DRACIN</title>
+  <title>{drama?.name || drama?.bookName || "Loading..."} - DRACIN</title>
 </svelte:head>
 
 <div class="min-h-screen">
@@ -108,7 +122,7 @@
           <!-- Info -->
           <div class="flex-1 text-center md:text-left">
             <h1 class="text-3xl md:text-4xl font-bold mb-4">
-              {drama.bookName}
+              {drama.name || drama.bookName}
             </h1>
 
             <!-- Meta -->
@@ -129,10 +143,11 @@
               {/if}
               <span class="flex items-center gap-1">
                 <Clock class="w-4 h-4" />
-                {episodes.length} Episode
+                {drama.chapterCount || episodes.length} Episode
               </span>
               <span
-                class="px-2 py-1 rounded-md {drama.status === 'Ongoing'
+                class="px-2 py-1 rounded-md {drama.status === 'Completed' ||
+                drama.status === 'TAMAT'
                   ? 'bg-green-500/20 text-green-400'
                   : 'bg-brand-orange/20 text-brand-orange'}"
               >
@@ -140,14 +155,13 @@
               </span>
             </div>
 
-            <!-- Genres -->
-            {#if drama.genres && drama.genres.length > 0}
+            <!-- Tags (Genres) -->
+            {#if (drama.tags && drama.tags.length > 0) || (drama.genres && drama.genres.length > 0)}
               <div
                 class="flex flex-wrap items-center justify-center md:justify-start gap-2 mb-6"
               >
-                {#each drama.genres.slice(0, 5) as genre}
-                  <span class="px-3 py-1 glass rounded-full text-xs"
-                    >{genre}</span
+                {#each (drama.tags || drama.genres || []).slice(0, 8) as tag}
+                  <span class="px-3 py-1 glass rounded-full text-xs">{tag}</span
                   >
                 {/each}
               </div>
@@ -203,6 +217,23 @@
               {epNum}
             </a>
           {/each}
+        </div>
+      {:else if drama.chapterCount && drama.chapterCount > 0}
+        <div
+          class="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2"
+        >
+          {#each Array(drama.chapterCount) as _, index}
+            {@const epNum = index + 1}
+            <div
+              class="flex items-center justify-center p-3 glass rounded-lg opacity-50 text-sm font-medium animate-pulse"
+            >
+              {epNum}
+            </div>
+          {/each}
+        </div>
+      {:else if isLoading}
+        <div class="flex justify-center py-12">
+          <Loader2 class="w-8 h-8 text-brand-orange animate-spin" />
         </div>
       {:else}
         <div class="text-center py-12 text-gray-400">
