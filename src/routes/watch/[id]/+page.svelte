@@ -19,6 +19,7 @@
     } from "$lib/services/api";
     import { favorites } from "$lib/stores/favorites";
     import { cachedEpisodes } from "$lib/stores/episodeStore";
+    import { selectedDrama } from "$lib/stores/drama";
     import { fixUrl } from "$lib/utils/helpers";
     import type { Drama, Episode, QualityOption } from "$lib/types";
 
@@ -26,7 +27,12 @@
     let episodeParam = $derived($page.url.searchParams.get("ep"));
     let currentEpisode = $state(1);
 
-    let drama = $state<Drama | null>(null);
+    // Initialize from store ONLY if it matches the current bookId
+    let drama = $state<Drama | null>(
+        $selectedDrama?.bookId === bookId || $selectedDrama?.id === bookId
+            ? $selectedDrama
+            : null,
+    );
     let episodes = $state<Episode[]>([]);
     let videoSrc = $state("");
     let qualityOptions = $state<QualityOption[]>([]);
@@ -71,8 +77,10 @@
         }
     });
 
-    onMount(async () => {
-        await loadDramaData();
+    $effect(() => {
+        if (bookId) {
+            loadDramaData();
+        }
     });
 
     // Watch for videoElement to be bound and load pending video
@@ -89,6 +97,24 @@
             };
         }
     });
+
+    function mergeDramaData(newData: Drama) {
+        if (
+            drama &&
+            (newData.bookName.startsWith("Drama ") || !newData.cover)
+        ) {
+            // Keep the better metadata we already have
+            drama = {
+                ...newData,
+                bookName: drama.bookName,
+                cover: drama.cover || newData.cover,
+                introduction: drama.introduction || newData.introduction,
+                rating: drama.rating || newData.rating,
+            };
+        } else {
+            drama = newData;
+        }
+    }
 
     async function loadDramaData() {
         isLoading = true;
@@ -107,7 +133,7 @@
 
                 // Fetch only drama details
                 const dramaData = await getDramaDetail(bookId);
-                drama = dramaData;
+                mergeDramaData(dramaData);
                 episodes = episodesData;
             } else {
                 // No cache, fetch everything
@@ -116,7 +142,7 @@
                     getAllEpisodes(bookId),
                 ]);
 
-                drama = dramaData;
+                mergeDramaData(dramaData);
                 episodes = fetchedEpisodes;
 
                 // Update cache
