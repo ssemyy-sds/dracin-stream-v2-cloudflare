@@ -18,8 +18,12 @@
 
   let bookId = $derived($page.params.id);
 
-  // Initialize from store if available, otherwise null
-  let drama = $state<Drama | null>($selectedDrama);
+  // Initialize from store ONLY if it matches the current bookId
+  let drama = $state<Drama | null>(
+    $selectedDrama?.bookId === bookId || $selectedDrama?.id === bookId
+      ? $selectedDrama
+      : null,
+  );
   let episodes = $state<Array<Omit<Episode, "videoUrl" | "qualityOptions">>>(
     [],
   );
@@ -42,7 +46,7 @@
     if (!bookId) return;
 
     // Only set loading if we don't already have drama data in state
-    if (!drama || drama.bookId !== bookId) {
+    if (!drama || (drama.bookId !== bookId && drama.id !== bookId)) {
       isFetching = true;
     }
     error = null;
@@ -53,7 +57,28 @@
         getAllEpisodes(bookId),
       ]);
 
-      drama = dramaData;
+      // Smart merge: Preserve good metadata if the API returned a fallback
+      if (drama) {
+        const isFallback =
+          dramaData.introduction === "Description not available" ||
+          !dramaData.cover ||
+          dramaData.bookName.startsWith("Drama ");
+
+        if (isFallback) {
+          // Keep our existing drama info but update episodes related info
+          drama = {
+            ...drama,
+            latestEpisode: dramaData.latestEpisode || drama.latestEpisode,
+            chapterCount: dramaData.chapterCount || drama.chapterCount,
+            status: dramaData.status || drama.status,
+          };
+        } else {
+          drama = dramaData;
+        }
+      } else {
+        drama = dramaData;
+      }
+
       episodes = episodesData;
     } catch (err) {
       console.error("Failed to load drama:", err);
