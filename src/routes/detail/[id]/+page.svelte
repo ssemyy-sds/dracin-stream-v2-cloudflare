@@ -80,6 +80,11 @@
       }
 
       episodes = episodesData;
+
+      // Update global store so next page (Watch) has the data
+      if (drama) {
+        selectedDrama.setSelected(drama);
+      }
     } catch (err) {
       console.error("Failed to load drama:", err);
       // If we don't have ANY drama data, then show error
@@ -94,6 +99,12 @@
   function handleFavorite() {
     if (drama) {
       favorites.toggle(drama);
+    }
+  }
+
+  function handleWatchClick() {
+    if (drama) {
+      selectedDrama.setSelected(drama);
     }
   }
 </script>
@@ -205,6 +216,7 @@
             >
               <a
                 href="/watch/{drama.bookId}"
+                onclick={handleWatchClick}
                 class="inline-flex items-center gap-2 px-8 py-3 bg-brand-orange hover:bg-orange-600 rounded-full font-semibold transition-colors shadow-lg shadow-brand-orange/30"
               >
                 <Play class="w-5 h-5 fill-white" />
@@ -237,6 +249,7 @@
             {@const epNum = index + 1}
             <a
               href="/watch/{drama.bookId}?ep={epNum}"
+              onclick={handleWatchClick}
               class="flex items-center justify-center p-3 glass rounded-lg hover:bg-brand-orange/20 hover:border-brand-orange/50 transition-all text-sm font-medium"
             >
               {epNum}
