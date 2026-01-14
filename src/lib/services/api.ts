@@ -204,7 +204,7 @@ export async function getDramaDetail(bookId: string): Promise<Drama> {
 /**
  * Get all episodes for a drama
  */
-export async function getAllEpisodes(bookId: string): Promise<Array<Omit<Episode, 'videoUrl' | 'qualityOptions'>>> {
+export async function getAllEpisodes(bookId: string): Promise<Episode[]> {
     const { data, providerId } = await fetchApi('allepisode', { bookId });
 
     // Handle secondary API wrapper: { data: [...], success: true }

@@ -18,6 +18,7 @@
         getStreamUrl,
     } from "$lib/services/api";
     import { favorites } from "$lib/stores/favorites";
+    import { cachedEpisodes } from "$lib/stores/episodeStore";
     import { fixUrl } from "$lib/utils/helpers";
     import type { Drama, Episode, QualityOption } from "$lib/types";
 
@@ -26,9 +27,7 @@
     let currentEpisode = $state(1);
 
     let drama = $state<Drama | null>(null);
-    let episodes = $state<Array<Omit<Episode, "videoUrl" | "qualityOptions">>>(
-        [],
-    );
+    let episodes = $state<Episode[]>([]);
     let videoSrc = $state("");
     let qualityOptions = $state<QualityOption[]>([]);
     let isLoading = $state(true);
@@ -96,13 +95,33 @@
         error = null;
 
         try {
-            const [dramaData, episodesData] = await Promise.all([
-                getDramaDetail(bookId),
-                getAllEpisodes(bookId),
-            ]);
+            // Check cache for episodes
+            const cached = cachedEpisodes.get(bookId);
 
-            drama = dramaData;
-            episodes = episodesData;
+            // If cache exists, use it immediately
+            let episodesData: Episode[] = [];
+
+            if (cached) {
+                // If we have cached episodes, we can skip fetching them
+                episodesData = cached.episodes;
+
+                // Fetch only drama details
+                const dramaData = await getDramaDetail(bookId);
+                drama = dramaData;
+                episodes = episodesData;
+            } else {
+                // No cache, fetch everything
+                const [dramaData, fetchedEpisodes] = await Promise.all([
+                    getDramaDetail(bookId),
+                    getAllEpisodes(bookId),
+                ]);
+
+                drama = dramaData;
+                episodes = fetchedEpisodes;
+
+                // Update cache
+                cachedEpisodes.set(bookId, fetchedEpisodes);
+            }
 
             if (episodeParam) {
                 currentEpisode = parseInt(episodeParam) || 1;
@@ -120,7 +139,33 @@
         isVideoLoading = true;
 
         try {
-            const options = await getStreamUrl(bookId, epNum);
+            // Check if current episode in list already has videoUrl (cached from big fetch)
+            const epIndex = Math.max(0, epNum - 1);
+            const currentEpData = episodes[epIndex];
+
+            let options: QualityOption[] = [];
+
+            if (
+                currentEpData &&
+                currentEpData.qualityOptions &&
+                currentEpData.qualityOptions.length > 0
+            ) {
+                // Use cached quality options directly!
+                options = currentEpData.qualityOptions;
+            } else if (currentEpData && currentEpData.videoUrl) {
+                // Use cached default videoUrl
+                options = [
+                    {
+                        quality: 720,
+                        videoUrl: currentEpData.videoUrl,
+                        isDefault: true,
+                    },
+                ];
+            } else {
+                // Fallback to fetching stream URL individually
+                options = await getStreamUrl(bookId, epNum);
+            }
+
             qualityOptions = options;
 
             const defaultOption =

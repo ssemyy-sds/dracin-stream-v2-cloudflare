@@ -33,6 +33,7 @@ export interface Episode {
     chapterName: string;
     cover?: string;
     videoUrl: string;     // Default quality URL
+    videoPath?: string;   // Original path from API (Backup2)
     qualityOptions: QualityOption[];
 }
 

@@ -87,6 +87,7 @@ export function normalizeEpisode(data: any, providerId: string): Episode {
         chapterName: data.chapterName || data.name || data.title || `Episode ${data.chapterIndex || 0}`,
         cover: fixUrl(data.cover || data.coverUrl || ''),
         videoUrl: '', // Populated usually by detailed stream call, or default
+        videoPath: data.videoPath || '',
         qualityOptions: []
     };
 
