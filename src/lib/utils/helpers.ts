@@ -9,6 +9,16 @@ export function fixUrl(url: string | undefined): string {
     if (!url.startsWith('http')) {
         return `https://${url}`;
     }
+    // Global fix for HEIC images (not supported in browsers)
+    // Proxy through wsrv.nl to convert to WebP
+    if (url.includes('.heic')) {
+        let fullUrl = url;
+        if (fullUrl.startsWith('//')) fullUrl = `https:${fullUrl}`;
+        else if (!fullUrl.startsWith('http')) fullUrl = `https://${fullUrl}`;
+
+        return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&output=webp`;
+    }
+
     return url;
 }
 
