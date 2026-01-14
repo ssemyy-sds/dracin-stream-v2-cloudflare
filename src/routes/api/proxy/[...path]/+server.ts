@@ -99,15 +99,15 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         if (apiConfig.id === 'api_backup1') {
             // Dramabos endpoint mapping
             const dramabosMap: Record<string, string> = {
-                'home': `/foryou/${page}`,
-                'trending': `/rank/${page}`,
-                'foryou': `/foryou/${page}`,
-                'vip': `/new/${page}`,
-                'search': keyword ? `/search/${encodeURIComponent(keyword)}/1` : '/search/drama/1',
-                'detail': bookId ? `/drama/${bookId}` : '/drama',
-                'allepisode': bookId ? `/chapters/${bookId}` : '/chapters',
-                'stream': `/watch/player?bookId=${bookId}&chapterId=${chapterId}`,
-                'categories': '/classify'
+                'home': `/home?offset=0&count=18&lang=id`,
+                'trending': `/home?offset=0&count=18&lang=id`, // Fallback
+                'foryou': `/home?offset=0&count=18&lang=id`, // Fallback
+                'vip': `/home?offset=0&count=18&lang=id`, // Fallback
+                'search': keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search?q=drama',
+                'detail': bookId ? `/detail/${bookId}?lang=id` : '/detail',
+                'allepisode': bookId ? `/detail/${bookId}?lang=id` : '/detail', // detail likely contains episodes
+                'stream': `/video/${chapterId}?lang=id`, // Assuming video ID maps to chapterId
+                'categories': '/home?offset=0&count=18&lang=id' // Fallback
             };
 
             const mappedPath = dramabosMap[actionPath] || `/${actionPath}`;

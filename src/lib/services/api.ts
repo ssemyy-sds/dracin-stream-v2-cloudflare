@@ -213,10 +213,21 @@ export async function getAllEpisodes(bookId: string): Promise<Episode[]> {
     });
 
     // Handle secondary API wrapper: { data: [...], success: true }
-    const episodeList = Array.isArray(data) ? data : (data?.data || []);
+    let episodeList = Array.isArray(data) ? data : (data?.data || []);
+
+    // Fallback: If logic above failed to find array (e.g. data was an object like { chapterList: [...] })
+    if (!Array.isArray(episodeList)) {
+        const potentialData = data?.data || data;
+        if (potentialData) {
+            if (Array.isArray(potentialData.chapterList)) episodeList = potentialData.chapterList;
+            else if (Array.isArray(potentialData.chapters)) episodeList = potentialData.chapters;
+            else if (Array.isArray(potentialData.episodes)) episodeList = potentialData.episodes;
+            else if (Array.isArray(potentialData.list)) episodeList = potentialData.list;
+        }
+    }
 
     if (!Array.isArray(episodeList)) {
-        console.warn('[API] getAllEpisodes: No valid episode array found');
+        console.warn('[API] getAllEpisodes: No valid episode array found', data);
         return [];
     }
 
