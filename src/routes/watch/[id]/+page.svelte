@@ -43,6 +43,7 @@
     let showQualityMenu = $state(false);
     let currentQuality = $state(540);
     let error = $state<string | null>(null);
+    let loadingPromise: Promise<Episode[]> | null = null;
 
     // Auto-play next episode setting
     let autoPlayNext = $state(true);
@@ -136,23 +137,51 @@
                 mergeDramaData(dramaData);
                 episodes = episodesData;
             } else {
-                // No cache, fetch everything
-                const [dramaData, fetchedEpisodes] = await Promise.all([
-                    getDramaDetail(bookId),
-                    getAllEpisodes(bookId),
-                ]);
-
+                // No cache, fetch drama detail first for fast UI
+                const dramaData = await getDramaDetail(bookId);
                 mergeDramaData(dramaData);
-                episodes = fetchedEpisodes;
 
-                // Update cache
-                cachedEpisodes.set(bookId, fetchedEpisodes);
+                // If we have chapter count, we can generate placeholders
+                // This makes the UI feel instant while the heavy download happens
+                if (drama && drama.chapterCount && episodes.length === 0) {
+                    episodes = Array(drama.chapterCount)
+                        .fill(0)
+                        .map((_, i) => ({
+                            bookId,
+                            chapterId: `virtual-${i + 1}`,
+                            chapterName: `Episode ${i + 1}`,
+                            videoUrl: "",
+                            qualityOptions: [],
+                        }));
+                }
+
+                // Unblock UI immediately
+                isLoading = false;
+
+                // Then fetch the heavy episode list (which includes video streams)
+                try {
+                    loadingPromise = getAllEpisodes(bookId);
+                    const fetchedEpisodes = await loadingPromise;
+                    episodes = fetchedEpisodes;
+                    cachedEpisodes.set(bookId, fetchedEpisodes);
+
+                    // Now that we have real video URLs, load the requested episode
+                    await loadEpisode(currentEpisode);
+                } catch (e) {
+                    console.error("Background episode fetch failed:", e);
+                    error = "Failed to load episodes";
+                }
             }
 
             if (episodeParam) {
                 currentEpisode = parseInt(episodeParam) || 1;
             }
-            await loadEpisode(currentEpisode);
+
+            // Load the video immediately (shows video spinner while loading stream)
+            // Works for both cached (fast) and non-cached (virtual) scenarios
+            if (episodes.length > 0) {
+                await loadEpisode(currentEpisode);
+            }
         } catch (err) {
             console.error("Failed to load drama:", err);
             error = "Failed to load drama";
@@ -187,6 +216,33 @@
                         isDefault: true,
                     },
                 ];
+            } else if (loadingPromise) {
+                // Optimization: Reuse the in-flight background request
+                try {
+                    const allEpisodes = await loadingPromise;
+                    const cachedEp = allEpisodes[epIndex];
+
+                    if (
+                        cachedEp &&
+                        (cachedEp.qualityOptions?.length > 0 ||
+                            cachedEp.videoUrl)
+                    ) {
+                        options =
+                            cachedEp.qualityOptions?.length > 0
+                                ? cachedEp.qualityOptions
+                                : [
+                                      {
+                                          quality: 720,
+                                          videoUrl: cachedEp.videoUrl,
+                                          isDefault: true,
+                                      },
+                                  ];
+                    } else {
+                        options = await getStreamUrl(bookId, epNum);
+                    }
+                } catch (e) {
+                    options = await getStreamUrl(bookId, epNum);
+                }
             } else {
                 // Fallback to fetching stream URL individually
                 options = await getStreamUrl(bookId, epNum);
@@ -200,6 +256,12 @@
                 options.find((o) => o.quality === 720) ||
                 options[0];
             if (defaultOption) {
+                // Prevent reloading if URL is same (e.g. background update)
+                if (videoSrc === defaultOption.videoUrl) {
+                    isVideoLoading = false;
+                    return;
+                }
+
                 videoSrc = defaultOption.videoUrl;
                 currentQuality = defaultOption.quality;
 
