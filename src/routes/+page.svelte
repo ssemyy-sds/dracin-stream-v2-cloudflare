@@ -117,6 +117,7 @@
               src={fixUrl(item.cover)}
               alt={item.bookName}
               class="w-full h-full object-cover object-top scale-110 blur-sm"
+              referrerpolicy="no-referrer"
             />
             <div class="absolute inset-0 gradient-overlay-left"></div>
             <div

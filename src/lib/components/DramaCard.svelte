@@ -29,6 +29,17 @@
       alt={drama.bookName}
       class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
       loading="lazy"
+      referrerpolicy="no-referrer"
+      onerror={(e) => {
+        const target = e.currentTarget;
+        if (target instanceof HTMLImageElement) {
+          target.onerror = null;
+          target.src =
+            "https://via.placeholder.com/300x450/1E1E1E/666666?text=No+Image";
+          console.error("Image failed:", fixUrl(drama.cover));
+        }
+      }}
+      data-original={fixUrl(drama.cover)}
     />
 
     <!-- Gradient Overlay -->
