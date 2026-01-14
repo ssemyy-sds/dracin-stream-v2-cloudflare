@@ -101,6 +101,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
             const dramabosMap: Record<string, string> = {
                 'home': `/home?offset=0&count=18&lang=id`,
                 'trending': `/home?offset=0&count=18&lang=id`, // Fallback
+                'recommend': `/home?offset=0&count=18&lang=id`, // Fallback
                 'foryou': `/home?offset=0&count=18&lang=id`, // Fallback
                 'vip': `/home?offset=0&count=18&lang=id`, // Fallback
                 'search': keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search?q=drama',
