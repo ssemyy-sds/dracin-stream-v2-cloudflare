@@ -259,15 +259,19 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
                 list = data.data.chapters;
             } else if (data.chapters && Array.isArray(data.chapters)) {
                 list = data.chapters;
+            } else if (data.videos && Array.isArray(data.videos)) {
+                list = data.videos;
+            } else if (data.data && data.data.videos && Array.isArray(data.data.videos)) {
+                list = data.data.videos;
             }
 
             if (list.length > 0) {
                 // Map to lightweight structure
                 const lightweightList = list.map((item: any) => ({
                     // Keep IDs and basic info
-                    chapterId: item.chapterId || item.chapterid || item.id,
-                    chapterIndex: item.chapterIndex || item.index,
-                    chapterName: item.chapterName || item.name || item.title,
+                    chapterId: item.chapterId || item.chapterid || item.vid || item.id,
+                    chapterIndex: item.chapterIndex || item.episode || item.index,
+                    chapterName: item.chapterName || item.episode || item.name || item.title,
                     cover: item.cover || item.coverUrl,
 
                     // Explicitly REMOVE heavy video fields
