@@ -1,0 +1,27 @@
+HTTP/1.1 200 OK
+Date: Thu, 15 Jan 2026 02:50:18 GMT
+Content-Type: image/webp
+Content-Length: 67856
+Connection: keep-alive
+Server: cloudflare
+Content-Disposition: inline; filename=image.webp
+Link: <https://p16-novel-sign-sg.fizzopic.org/novel-images-sg/369dc6ed477944d5c24c9deedc088fba~tplv-resize:570:810.heic?rk3s=95ec04ee&x-expires=1770077024&x-signature=m8IqYrrGdQ5XiHOycmRU5pfQXJ0%3D>; rel="canonical"
+Expires: Fri, 15 Jan 2027 02:50:18 GMT
+Cache-Control: public, max-age=31536000
+X-Upstream-Response-Length: 39394
+Cross-Origin-Resource-Policy: cross-origin
+Access-Control-Allow-Origin: *
+Timing-Allow-Origin: *
+X-Images-Api: 5
+X-Cache-Status: MISS
+Accept-Ranges: bytes
+last-modified: Thu, 15 Jan 2026 02:50:18 GMT
+cf-cache-status: MISS
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+X-Content-Type-Options: nosniff
+Vary: accept-encoding
+Report-To: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=Yh9N%2F51ZlOwGqmmIh80VywbA6IkK2Q%2BNOSeHeKznwOZBTDEsppLeU93P%2Fh6PkD%2BjhT9WNODgKaFBCLJY%2FRQpP5r%2B8kdPVaA%3D"}]}
+Nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+CF-RAY: 9be21098aff8ce2a-SIN
+alt-svc: h3=":443"; ma=86400
+

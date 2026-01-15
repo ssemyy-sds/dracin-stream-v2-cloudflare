@@ -98,17 +98,23 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         // Provider-specific endpoint mapping
         if (apiConfig.id === 'api_backup1') {
             // Dramabos endpoint mapping
+            // Dynamic parameter mapping for Dramabos
+            const pageNum = parseInt(queryParams.get('page') || '1');
+            const sizeNum = parseInt(queryParams.get('size') || '18');
+            const offset = (pageNum - 1) * sizeNum;
+            const lang = queryParams.get('lang') || 'id';
+
             const dramabosMap: Record<string, string> = {
-                'home': `/home?offset=0&count=18&lang=id`,
-                'trending': `/home?offset=0&count=18&lang=id`, // Fallback
-                'recommend': `/home?offset=0&count=18&lang=id`, // Fallback
-                'foryou': `/home?offset=0&count=18&lang=id`, // Fallback
-                'vip': `/home?offset=0&count=18&lang=id`, // Fallback
-                'search': keyword ? `/search?q=${encodeURIComponent(keyword)}` : '/search?q=drama',
-                'detail': bookId ? `/detail/${bookId}?lang=id` : '/detail',
-                'allepisode': bookId ? `/detail/${bookId}?lang=id` : '/detail', // detail likely contains episodes
-                'stream': `/video/${chapterId}?lang=id`, // Assuming video ID maps to chapterId
-                'categories': '/home?offset=0&count=18&lang=id' // Fallback
+                'home': `/home?offset=${offset}&count=${sizeNum}&lang=${lang}`,
+                'trending': `/home?offset=0&count=18&lang=${lang}`,
+                'recommend': `/home?offset=0&count=18&lang=${lang}`,
+                'foryou': `/home?offset=0&count=18&lang=${lang}`,
+                'vip': `/home?offset=0&count=18&lang=${lang}`,
+                'search': keyword ? `/search?q=${encodeURIComponent(keyword)}&lang=${lang}` : `/search?q=drama&lang=${lang}`,
+                'detail': bookId ? `/detail/${bookId}?lang=${lang}` : '/detail',
+                'allepisode': bookId ? `/detail/${bookId}?lang=${lang}` : '/detail',
+                'stream': `/video/${chapterId}?lang=${lang}`,
+                'categories': `/home?offset=0&count=18&lang=${lang}`
             };
 
             const mappedPath = dramabosMap[actionPath] || `/${actionPath}`;

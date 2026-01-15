@@ -11,7 +11,8 @@ export function fixUrl(url: string | undefined): string {
     }
     // Global fix for HEIC images (not supported in browsers)
     // Proxy through wsrv.nl to convert to WebP
-    if (url.includes('.heic')) {
+    // Check if NOT already proxied to avoid infinite loops
+    if (url.toLowerCase().includes('.heic') && !url.includes('wsrv.nl')) {
         let fullUrl = url;
         if (fullUrl.startsWith('//')) fullUrl = `https:${fullUrl}`;
         else if (!fullUrl.startsWith('http')) fullUrl = `https://${fullUrl}`;
