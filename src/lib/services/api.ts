@@ -221,6 +221,7 @@ export async function getAllEpisodes(bookId: string): Promise<Episode[]> {
         if (potentialData) {
             if (Array.isArray(potentialData.chapterList)) episodeList = potentialData.chapterList;
             else if (Array.isArray(potentialData.chapters)) episodeList = potentialData.chapters;
+            else if (Array.isArray(potentialData.videos)) episodeList = potentialData.videos;
             else if (Array.isArray(potentialData.episodes)) episodeList = potentialData.episodes;
             else if (Array.isArray(potentialData.list)) episodeList = potentialData.list;
         }
@@ -321,7 +322,7 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
                         }
 
                         options.push({
-                            quality: path.quality || path.definition || 720,
+                            quality: path.quality || parseInt(path.definition) || 720,
                             videoUrl: fixUrl(fullUrl),
                             isDefault: false
                         });
@@ -331,10 +332,29 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
         });
     }
 
+    // Dramabos 'list' handling (multiple qualities)
+    if (streamData.list && Array.isArray(streamData.list)) {
+        streamData.list.forEach((item: any) => {
+            const url = item.url || item.videoUrl || item.path;
+            if (url) {
+                options.push({
+                    quality: parseInt(item.definition) || 720,
+                    videoUrl: fixUrl(url),
+                    isDefault: false
+                });
+            }
+        });
+    }
+
     // Create default option if direct url exists
     if (options.length === 0 && (streamData.videoUrl || streamData.url || streamData.videoPath)) {
+        let q = streamData.quality || 720;
+        if (streamData.definition && typeof streamData.definition === 'string') {
+            q = parseInt(streamData.definition) || 720;
+        }
+
         options.push({
-            quality: streamData.quality || 720,
+            quality: q,
             videoUrl: fixUrl(streamData.videoUrl || streamData.url || streamData.videoPath),
             isDefault: true
         });

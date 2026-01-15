@@ -87,9 +87,9 @@ export function normalizeDrama(data: any, providerId: string): Drama {
  */
 export function normalizeEpisode(data: any, providerId: string): Episode {
     const ep: Episode = {
-        chapterId: data.chapterId || data.chapterid || data.id || '',
-        chapterIndex: data.chapterIndex || data.index || 0,
-        chapterName: data.chapterName || data.name || data.title || `Episode ${data.chapterIndex || 0}`,
+        chapterId: data.chapterId || data.chapterid || data.vid || data.id || '',
+        chapterIndex: data.chapterIndex || data.episode || data.index || 0,
+        chapterName: data.chapterName || data.name || data.title || `Episode ${data.chapterIndex || data.episode || 0}`,
         cover: fixUrl(data.cover || data.coverUrl || ''),
         videoUrl: '', // Populated usually by detailed stream call, or default
         videoPath: data.videoPath || '',
