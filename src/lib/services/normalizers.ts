@@ -53,6 +53,11 @@ export function normalizeDrama(data: any, providerId: string): Drama {
         if (data.corner && data.corner.name) {
             drama.cornerLabel = data.corner.name;
         }
+        // Dramabos uses 'episodes' for the count
+        if (data.episodes) {
+            drama.latestEpisode = data.episodes;
+            drama.chapterCount = data.episodes;
+        }
         // Dramabos uses different field names
         if (data.introduction && !drama.introduction) {
             drama.introduction = data.introduction;
