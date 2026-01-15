@@ -130,6 +130,16 @@
             href="/favorites"
             class="relative p-2 text-gray-300 hover:text-brand-orange transition-colors"
             aria-label="Watchlist"
+            onclick={(e) => {
+              if ($page.url.pathname === "/favorites") {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                  window.history.back();
+                } else {
+                  goto("/");
+                }
+              }
+            }}
           >
             <Heart
               class="w-5 h-5 {$favoritesCount > 0
