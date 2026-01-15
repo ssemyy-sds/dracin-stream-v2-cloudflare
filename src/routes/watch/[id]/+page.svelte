@@ -283,9 +283,9 @@
             qualityOptions = options;
 
             const defaultOption =
-                options.find((o) => o.quality === 540) ||
                 options.find((o) => o.isDefault) ||
                 options.find((o) => o.quality === 720) ||
+                options.find((o) => o.quality === 540) ||
                 options[0];
             if (defaultOption) {
                 // Prevent reloading if URL is same (e.g. background update)

@@ -337,10 +337,11 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
         streamData.list.forEach((item: any) => {
             const url = item.url || item.videoUrl || item.path;
             if (url) {
+                const q = parseInt(item.definition) || 720;
                 options.push({
-                    quality: parseInt(item.definition) || 720,
+                    quality: q,
                     videoUrl: fixUrl(url),
-                    isDefault: false
+                    isDefault: q === 720 // Mark 720p as default if found
                 });
             }
         });
@@ -355,17 +356,28 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
         }
 
         // Only add if not already in list (to avoid duplicates)
-        const exists = options.some(o => o.videoUrl === fixUrl(rootUrl));
+        // AND prioritize https from list over http from root
+        const normalizedRootUrl = fixUrl(rootUrl);
+        const exists = options.some(o => o.videoUrl === normalizedRootUrl);
+
         if (!exists) {
             options.push({
                 quality: q,
-                videoUrl: fixUrl(rootUrl),
-                isDefault: options.length === 0 // Default if nothing else found
+                videoUrl: normalizedRootUrl,
+                isDefault: options.length === 0
             });
         }
     }
 
-    return options.sort((a, b) => b.quality - a.quality);
+    // Final Sort: Highest quality first
+    options.sort((a, b) => b.quality - a.quality);
+
+    // If no default was set (e.g. no 720p found), set the first one (highest)
+    if (options.length > 0 && !options.some(o => o.isDefault)) {
+        options[0].isDefault = true;
+    }
+
+    return options;
 }
 
 /**

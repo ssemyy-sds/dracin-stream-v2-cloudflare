@@ -1,59 +1,104 @@
-#melolo dramabos.asia
+# Dramabos (api_backup1) Implementation & Algorithm Strategy
 
-#to check API health
-https://dramabos.asia/api/melolo/health
+## 1. Request Flow Overview
+User Action -> Frontend (`api.ts`) -> Proxy Server (`+server.ts`) -> Dramabos API -> Normalization -> UI
 
-#base URL 
-https://dramabos.asia/api/melolo/api/v1
+## 2. Proxy Server Algorithm (`src/routes/api/proxy/[...path]/+server.ts`)
+The proxy detects `api_backup1` and applies specific mapping logic:
 
-#for home page
-https://dramabos.asia/api/melolo/api/v1/home?offset=0&count=18&lang=id
-or only
-https://dramabos.asia/api/melolo/api/v1/home
+```typescript
+// Algorithm:
+// 1. Get query params (bookId, chapterId, page, size)
+// 2. Map frontend parameters to Dramabos parameters
+// 3. Page -> Offset calculation: (page - 1) * size
+// 4. Default lang set to 'id'
 
-#for search
-https://dramabos.asia/api/melolo/api/v1/search?q={query}
+if (apiConfig.id === 'api_backup1') {
+    const pageNum = parseInt(queryParams.get('page') || '1');
+    const sizeNum = parseInt(queryParams.get('size') || '18');
+    const offset = (pageNum - 1) * sizeNum;
+    const lang = queryParams.get('lang') || 'id';
 
-#for detail page
-https://dramabos.asia/api/melolo/api/v1/detail/7582204628406651909?lang=id
-or only
-https://dramabos.asia/api/melolo/api/v1/detail/{id}
+    const dramabosMap: Record<string, string> = {
+        'home': `/home?offset=${offset}&count=${sizeNum}&lang=${lang}`,
+        'search': `/search?q=${encodeURIComponent(keyword)}&lang=${lang}`,
+        'detail': `/detail/${bookId}?lang=${lang}`,
+        'allepisode': `/detail/${bookId}?lang=${lang}`, // Episodes are nested in detail
+        'stream': `/video/${chapterId}?lang=${lang}`,
+    };
+    
+    // Final URL construction: baseUrl + mappedPath
+}
+```
 
-#for player
-https://dramabos.asia/api/melolo/api/v1/video/7582232554074278965?lang=id
-or only
-https://dramabos.asia/api/melolo/api/v1/video/{vid}
+## 3. Data Normalization Algorithm (`src/lib/services/normalizers.ts`)
+Converts raw JSON from Dramabos to Dracin Stream standard objects.
 
-# Current Code Configuration (api_backup1) - Updated 2026-01-15
+### Drama metadata:
+- Maps `id` -> `bookId`
+- Maps `title` -> `bookName`
+- Maps `episodes` -> `latestEpisode` & `chapterCount`
+- Maps `intro` or `introduction` -> `introduction`
+- Maps `cover` -> `cover` (runs through `fixUrl`)
 
-## Base URL
-`https://dramabos.asia/api/melolo/api/v1`
+### Episode/Chapter list:
+Dramabos returns episodes inside a `videos` array within the `detail` response.
+- Maps `vid` -> `chapterId`
+- Maps `episode` -> `chapterIndex` (numeric)
+- Maps `episode` -> `chapterName` (e.g. "Episode 1")
 
-## Home Page Call
-**Code**: `src/routes/api/proxy/[...path]/+server.ts`
-**Mapping**: `home` -> `/home?offset=${offset}&count=${sizeNum}&lang=${lang}`
-**Calculation**: `offset = (page - 1) * size`
-**Resulting URL example**: `https://dramabos.asia/api/melolo/api/v1/home?offset=0&count=20&lang=id`
+## 4. Video Stream Algorithm (`src/lib/services/api.ts`)
+How the video URL is extracted from the `/video/{vid}` response:
 
-## Detail Page Call
-**Code**: `src/routes/api/proxy/[...path]/+server.ts`
-**Mapping**: `detail` -> `/detail/${bookId}?lang=${lang}`
-**Resulting URL example**: `https://dramabos.asia/api/melolo/api/v1/detail/7582204628406651909?lang=id`
+```typescript
+function normalizeStreamResponse(streamData) {
+    let options = [];
 
-## Search Call
-**Code**: `src/routes/api/proxy/[...path]/+server.ts`
-**Mapping**: `search` -> `/search?q=${encodeURIComponent(keyword)}&lang=${lang}`
-**Resulting URL example**: `https://dramabos.asia/api/melolo/api/v1/search?q=drama&lang=id`
+    // 1. Handle Dramabos 'list' array (Multi-quality)
+    if (streamData.list) {
+        streamData.list.forEach(item => {
+            options.push({
+                quality: parseInt(item.definition), // "540p" -> 540
+                videoUrl: fixUrl(item.url)
+            });
+        });
+    }
 
-## Video Player Call
-**Code**: `src/routes/api/proxy/[...path]/+server.ts`
-**Mapping**: `stream` -> `/video/${chapterId}?lang=${lang}`
-**Resulting URL example**: `https://dramabos.asia/api/melolo/api/v1/video/7582232554074278965?lang=id`
+    // 2. Handle Root 'url' (Primary stream)
+    const rootUrl = streamData.url || streamData.videoUrl;
+    if (rootUrl && !options.some(o => o.videoUrl === fixUrl(rootUrl))) {
+        options.push({
+            quality: parseInt(streamData.definition) || 720,
+            videoUrl: fixUrl(rootUrl),
+            isDefault: options.length === 0
+        });
+    }
 
-## Image Handling & Fixes
-- **Extension Check**: Case-insensitive check for `.heic`
-- **Double Proxy Prevention**: Fixed bug where images would be proxied twice if `fixUrl` was called multiple times.
-- **Image Proxy**: Using `wsrv.nl` for HEIC to WebP conversion.
-- **Referrer Policy**: Set to `no-referrer` in `DramaCard.svelte` and `+page.svelte`.
-- **Fallback**: Placeholder image shown if proxy fails.
-- **Log**: Added `[fixUrl] Converting HEIC:` console log for tracking.
+    // 3. Sort Descending (720 -> 540 -> 240)
+    return options.sort((a, b) => b.quality - a.quality);
+}
+```
+
+## 5. Image & URL Fixer Algorithm (`src/lib/utils/helpers.ts`)
+Crucial for images and potential protocol issues.
+
+```typescript
+function fixUrl(url) {
+    // 1. Convert .heic to WebP via wsrv.nl proxy
+    // 2. Prevent double-proxying (check if wsrv.nl already in URL)
+    if (url.includes('.heic') && !url.includes('wsrv.nl')) {
+        return `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=webp`;
+    }
+    // 3. Add https: if missing
+}
+```
+
+## 6. Video Player Playback Fixes
+To bypass cross-domain restrictions (CORS/Referer):
+- **Referrer Policy**: Set to `no-referrer` on the `<video>` tag.
+- **Protocol**: Always ensured `https` via `fixUrl`.
+
+## 7. Current Mapped Target URLs (Summary)
+- **Home**: `https://dramabos.asia/api/melolo/api/v1/home?offset=0&count=20&lang=id`
+- **Detail**: `https://dramabos.asia/api/melolo/api/v1/detail/{id}?lang=id`
+- **Stream**: `https://dramabos.asia/api/melolo/api/v1/video/{vid}?lang=id`
