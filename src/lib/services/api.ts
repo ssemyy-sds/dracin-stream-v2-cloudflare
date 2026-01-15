@@ -346,18 +346,23 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
         });
     }
 
-    // Create default option if direct url exists
-    if (options.length === 0 && (streamData.videoUrl || streamData.url || streamData.videoPath)) {
+    // Create default option if direct url exists (Dramabos often has root 'url')
+    const rootUrl = streamData.videoUrl || streamData.url || streamData.videoPath;
+    if (rootUrl) {
         let q = streamData.quality || 720;
         if (streamData.definition && typeof streamData.definition === 'string') {
             q = parseInt(streamData.definition) || 720;
         }
 
-        options.push({
-            quality: q,
-            videoUrl: fixUrl(streamData.videoUrl || streamData.url || streamData.videoPath),
-            isDefault: true
-        });
+        // Only add if not already in list (to avoid duplicates)
+        const exists = options.some(o => o.videoUrl === fixUrl(rootUrl));
+        if (!exists) {
+            options.push({
+                quality: q,
+                videoUrl: fixUrl(rootUrl),
+                isDefault: options.length === 0 // Default if nothing else found
+            });
+        }
     }
 
     return options.sort((a, b) => b.quality - a.quality);

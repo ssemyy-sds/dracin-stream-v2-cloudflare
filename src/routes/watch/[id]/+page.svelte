@@ -506,6 +506,7 @@
                 class="w-full h-full object-contain bg-black"
                 poster={fixUrl(drama.cover)}
                 playsinline
+                referrerpolicy="no-referrer"
                 onclick={handleVideoTap}
                 onplay={handlePlay}
                 onpause={handlePause}
