@@ -93,7 +93,7 @@
             videoElement.load();
             videoElement.oncanplay = () => {
                 videoElement.play().catch(() => {
-                    console.log("Autoplay blocked");
+                    // Autoplay blocked
                 });
             };
         }
@@ -230,9 +230,6 @@
                 currentEpData.chapterId &&
                 !currentEpData.chapterId.startsWith("virtual")
             ) {
-                console.log(
-                    `Loading stream for episode ${epNum} (ID: ${currentEpData.chapterId})`,
-                );
                 options = await getStreamUrl(
                     bookId,
                     epNum,
@@ -303,7 +300,7 @@
                     videoElement.load();
                     videoElement.oncanplay = () => {
                         videoElement.play().catch(() => {
-                            console.log("Autoplay blocked");
+                            // Autoplay blocked
                         });
                     };
                 } else {

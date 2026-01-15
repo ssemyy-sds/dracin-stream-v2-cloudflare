@@ -37,7 +37,6 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
     }
 
     const apiConfig = getAPIConfig(providerId) || getAPIConfig(DEFAULT_API_ID)!;
-    console.log(`[API Proxy] Using provider: ${apiConfig.name} (${apiConfig.id})`);
 
     // Build query string
     const queryParams = new URLSearchParams();
@@ -87,7 +86,6 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         }
 
         targetUrl = `${apiConfig.baseUrl}?${queryParams.toString()}`;
-        console.log(`[API Proxy] Mapped action: ${actionPath} -> ${mappedAction}`);
     } else {
         // Path based (Primary, Backup1, Backup2)
         const bookId = queryParams.get('bookId');
@@ -119,7 +117,6 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
 
             const mappedPath = dramabosMap[actionPath] || `/${actionPath}`;
             targetUrl = `${apiConfig.baseUrl}${mappedPath}`;
-            console.log(`[API Proxy] Dramabos mapped: ${actionPath} -> ${mappedPath}`);
 
         } else if (apiConfig.id === 'api_backup2') {
             // Paxsenix endpoint mapping
@@ -156,7 +153,6 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
 
             const paxQuery = paxParams.toString();
             targetUrl = `${apiConfig.baseUrl}${mappedPath}${paxQuery ? '?' + paxQuery : ''}`;
-            console.log(`[API Proxy] Paxsenix mapped: ${actionPath} -> ${mappedPath}`);
 
         } else {
             // Primary (Sansekai) - standard path mapping
@@ -175,15 +171,12 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         }
     }
 
-    console.log('[API Proxy] targetUrl:', targetUrl);
+
 
     try {
         const response = await fetch(targetUrl, {
             headers: apiConfig.headers || {}
         });
-
-        // Log response details for debugging
-        console.log(`[API Proxy] Upstream status: ${response.status} for ${path}`);
 
         // Handle non-OK responses with detailed error extraction
         if (!response.ok) {
@@ -246,8 +239,6 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         // This reduces 13MB+ payloads to <100KB by removing video details
         const mode = url.searchParams.get('mode');
         if (mode === 'list' && (actionPath === 'allepisode' || actionPath === 'chapters' || actionPath === 'download')) {
-            console.log('[API Proxy] Mode=list active, stripping video data...');
-
             let list: any[] = [];
 
             // Standardize list extraction

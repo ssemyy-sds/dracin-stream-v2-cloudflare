@@ -17,7 +17,7 @@ export function fixUrl(url: string | undefined): string {
         if (fullUrl.startsWith('//')) fullUrl = `https:${fullUrl}`;
         else if (!fullUrl.startsWith('http')) fullUrl = `https://${fullUrl}`;
 
-        console.log('[fixUrl] Converting HEIC:', fullUrl);
+
         return `https://wsrv.nl/?url=${encodeURIComponent(fullUrl)}&output=webp`;
     }
 

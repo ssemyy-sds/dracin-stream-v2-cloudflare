@@ -12,7 +12,7 @@ import { activeProvider } from '$lib/stores/apiState';
 // API base URL (through Cloudflare Worker proxy)
 const API_BASE = '/api/proxy';
 
-const DEBUG_MODE = true;
+const DEBUG_MODE = false;
 
 function debugLog(message: string, data: any = null) {
     if (DEBUG_MODE) {
