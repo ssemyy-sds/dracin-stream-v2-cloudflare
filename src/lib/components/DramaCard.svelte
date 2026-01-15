@@ -61,7 +61,7 @@
     <!-- Episode Count (top right) -->
     {#if drama.latestEpisode}
       <div
-        class="absolute top-2 right-2 px-2 py-1 rounded-md glass text-xs font-medium"
+        class="absolute top-2 right-2 px-2 py-1 rounded-md bg-blue-600/90 backdrop-blur-sm text-xs font-medium"
       >
         Ep {drama.latestEpisode}
       </div>

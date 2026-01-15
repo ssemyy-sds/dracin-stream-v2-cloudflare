@@ -59,8 +59,8 @@ export function normalizeDrama(data: any, providerId: string): Drama {
             drama.chapterCount = data.episodes;
         }
         // Dramabos uses different field names
-        if (data.introduction && !drama.introduction) {
-            drama.introduction = data.introduction;
+        if ((data.introduction || data.intro) && !drama.introduction) {
+            drama.introduction = data.introduction || data.intro;
         }
     } else if (providerId === 'api_backup2') {
         // Backup 2 (Paxsenix)
