@@ -3,7 +3,7 @@ import { Env } from '../index';
 export async function getConfig(env: Env): Promise<any> {
     const config = await env.API_CONFIG.get('config', 'json');
     return config || {
-        activeApiId: 'api_secondary',
+        activeApiId: 'api_backup2', // Synced with src/lib/config/apis.config.ts
         lastSwitchTime: new Date().toISOString(),
         switchHistory: [],
         apiStats: {}

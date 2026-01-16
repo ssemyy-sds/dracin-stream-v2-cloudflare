@@ -36,7 +36,6 @@
           target.onerror = null;
           target.src =
             "https://via.placeholder.com/300x450/1E1E1E/666666?text=No+Image";
-          console.error("Image failed:", fixUrl(drama.cover));
         }
       }}
       data-original={fixUrl(drama.cover)}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { ChevronLeft, ChevronRight, Star, Play } from "lucide-svelte";
   import DramaCard from "$lib/components/DramaCard.svelte";
   import { getHome, getRecommend, getVip } from "$lib/services/api";
@@ -17,6 +17,8 @@
   let homeDramas = $state<Drama[]>([]);
   let recommendDramas = $state<Drama[]>([]);
   let vipDramas = $state<Drama[]>([]);
+
+  let autoSlideInterval: ReturnType<typeof setInterval>;
 
   onMount(async () => {
     try {
@@ -47,7 +49,12 @@
     }
   });
 
-  let autoSlideInterval: ReturnType<typeof setInterval>;
+  // Cleanup interval on component destroy to prevent memory leaks
+  onDestroy(() => {
+    if (autoSlideInterval) {
+      clearInterval(autoSlideInterval);
+    }
+  });
 
   function startAutoSlide() {
     autoSlideInterval = setInterval(() => {

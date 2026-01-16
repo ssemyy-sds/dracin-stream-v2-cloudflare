@@ -1,7 +1,7 @@
 <script lang="ts">
     import { page } from "$app/stores";
     import { goto } from "$app/navigation";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     import {
         ChevronUp,
         ChevronDown,
@@ -135,7 +135,7 @@
                 // Fetch only drama details
                 const dramaData = await getDramaDetail(bookId);
                 mergeDramaData(dramaData);
-                episodes = episodesData;
+                // Note: episodes already set from cache above, don't overwrite
             } else {
                 // No cache, fetch drama detail first for fast UI
                 const dramaData = await getDramaDetail(bookId);
@@ -468,6 +468,13 @@
         showNextEpisodePrompt = false;
         nextEpisode();
     }
+
+    // Cleanup intervals on component destroy to prevent memory leaks
+    onDestroy(() => {
+        if (controlsTimeout) clearTimeout(controlsTimeout);
+        if (panelTimeout) clearTimeout(panelTimeout);
+        if (countdownInterval) clearInterval(countdownInterval);
+    });
 </script>
 
 <svelte:head>

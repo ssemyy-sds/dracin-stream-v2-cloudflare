@@ -1,18 +1,19 @@
 name = "dracin-api-bot"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
-account_id = "3cf989fc32f0e3a840fd0cd785d75be1"
+# account_id should be set via CLOUDFLARE_ACCOUNT_ID env var or wrangler login
 
-[vars]
-ADMIN_CHAT_ID = "179629482"
+# ADMIN_CHAT_ID should be set via: wrangler secret put ADMIN_CHAT_ID
+# Do NOT commit secrets to version control
 
 [[kv_namespaces]]
 binding = "API_CONFIG"
-id = "628f407be7194841861f526e3a421ec0"
+# Set KV namespace ID via environment or use: wrangler kv:namespace list
+id = "" # Set via CI/CD or local .dev.vars
 
 [env.production]
-vars = { ADMIN_CHAT_ID = "179629482" }
+# Production secrets should be set via Cloudflare dashboard or wrangler secret
 
 [[env.production.kv_namespaces]]
 binding = "API_CONFIG"
-id = "628f407be7194841861f526e3a421ec0"
+id = "" # Set via CI/CD

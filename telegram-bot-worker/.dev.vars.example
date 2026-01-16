@@ -1,0 +1,9 @@
+# Development environment variables for telegram-bot-worker
+# Copy this file to .dev.vars and fill in your values
+# NEVER commit .dev.vars to version control!
+
+# Telegram Bot Token (get from @BotFather)
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+
+# Admin Chat ID (your Telegram user ID)
+ADMIN_CHAT_ID=your_telegram_chat_id_here

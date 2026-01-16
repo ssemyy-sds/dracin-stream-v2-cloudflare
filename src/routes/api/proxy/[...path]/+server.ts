@@ -1,7 +1,41 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { API_CONFIGS, DEFAULT_API_ID, getAPIConfig } from '$lib/config/apis.config';
 
-export const GET: RequestHandler = async ({ url, params, platform }) => {
+// CORS configuration - restrict to your domains
+const ALLOWED_ORIGINS = [
+    'https://dracin.pages.dev',
+    'https://dracinku.pages.dev',
+    'http://localhost:5173',
+    'http://localhost:4173'
+];
+
+/**
+ * Get CORS headers based on request origin
+ */
+function getCorsHeaders(origin: string | null): Record<string, string> {
+    // Check if origin is allowed
+    const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+    return {
+        'Access-Control-Allow-Origin': allowedOrigin,
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Max-Age': '86400' // 24 hours
+    };
+}
+
+/**
+ * Handle CORS preflight requests
+ */
+export const OPTIONS: RequestHandler = ({ request }) => {
+    const origin = request.headers.get('Origin');
+    return new Response(null, {
+        status: 204,
+        headers: getCorsHeaders(origin)
+    });
+};
+
+export const GET: RequestHandler = async ({ url, params, platform, request }) => {
     // Matcher: Not Health
     // We are handling this in code because rename failed
     const path = params.path;
@@ -90,7 +124,9 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         // Path based (Primary, Backup1, Backup2)
         const bookId = queryParams.get('bookId');
         const chapterId = queryParams.get('chapterId');
-        const keyword = queryParams.get('query') || queryParams.get('keyword');
+        // Sanitize and limit keyword length to prevent abuse
+        const rawKeyword = queryParams.get('query') || queryParams.get('keyword');
+        const keyword = rawKeyword ? rawKeyword.substring(0, 100).trim() : null;
         const page = queryParams.get('page') || '1';
 
         // Provider-specific endpoint mapping
@@ -199,7 +235,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
                 status: response.status,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                    ...getCorsHeaders(request.headers.get('Origin')),
                     'X-Active-Provider': apiConfig.id
                 }
             });
@@ -217,7 +253,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
                 status: 502,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                    ...getCorsHeaders(request.headers.get('Origin')),
                     'X-Active-Provider': apiConfig.id
                 }
             });
@@ -231,7 +267,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
         // Pass through CORS
         const responseHeaders = new Headers({
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
+            ...getCorsHeaders(request.headers.get('Origin')),
             'X-Active-Provider': apiConfig.id
         });
 
@@ -304,7 +340,7 @@ export const GET: RequestHandler = async ({ url, params, platform }) => {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                ...getCorsHeaders(request.headers.get('Origin'))
             }
         });
     }

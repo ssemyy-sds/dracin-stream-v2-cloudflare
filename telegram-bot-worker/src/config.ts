@@ -161,8 +161,8 @@ export const API_CONFIGS: APIConfig[] = [
     }
 ];
 
-// Default to secondary since primary blocks Cloudflare
-export const DEFAULT_API_ID = 'api_secondary';
+// Default to backup2 since others are down (synced with src/lib/config/apis.config.ts)
+export const DEFAULT_API_ID = 'api_backup2';
 
 // Helper function to get API config by ID
 export function getAPIConfig(apiId: string): APIConfig | undefined {

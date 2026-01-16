@@ -21,11 +21,12 @@ function createEpisodeCache() {
         },
         get: (bookId: string) => {
             let data: CachedEpisodes | null = null;
-            subscribe(value => {
+            const unsubscribe = subscribe(value => {
                 if (value && value.bookId === bookId) {
                     data = value;
                 }
-            })();
+            });
+            unsubscribe(); // Immediately unsubscribe after reading
             return data;
         },
         clear: () => set(null)

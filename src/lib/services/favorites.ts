@@ -13,10 +13,29 @@ export function getFavorites(): FavoriteItem[] {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (!stored) return [];
 
-        const favorites = JSON.parse(stored) as FavoriteItem[];
+        const parsed = JSON.parse(stored);
+
+        // Validate that parsed data is an array
+        if (!Array.isArray(parsed)) {
+            console.warn('[Favorites] Invalid data format in localStorage, resetting');
+            localStorage.removeItem(STORAGE_KEY);
+            return [];
+        }
+
+        // Filter out invalid items and ensure required fields exist
+        const favorites = parsed.filter((item: any) =>
+            item &&
+            typeof item.bookId === 'string' &&
+            typeof item.addedAt === 'number'
+        ) as FavoriteItem[];
+
         // Sort by addedAt descending (newest first)
         return favorites.sort((a, b) => b.addedAt - a.addedAt);
     } catch {
+        console.warn('[Favorites] Failed to parse localStorage data, resetting');
+        try {
+            localStorage.removeItem(STORAGE_KEY);
+        } catch { }
         return [];
     }
 }

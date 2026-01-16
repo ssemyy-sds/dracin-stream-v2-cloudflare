@@ -84,8 +84,10 @@ export function debounce<T extends (...args: unknown[]) => void>(
 }
 
 /**
- * Generate placeholder image URL
+ * Generate placeholder image URL (inline SVG, no external dependency)
  */
 export function getPlaceholderImage(width = 300, height = 450): string {
-    return `https://via.placeholder.com/${width}x${height}/1E1E1E/666666?text=No+Image`;
+    // Use inline SVG data URL to avoid external service dependency
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect fill="#1E1E1E" width="${width}" height="${height}"/><text fill="#666666" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">No Image</text></svg>`;
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
