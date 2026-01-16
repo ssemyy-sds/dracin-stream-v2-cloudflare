@@ -4,18 +4,39 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
-        const { name, feedback, apiId } = await request.json() as { name?: string, feedback: string, apiId?: string };
+        const { name, feedback, apiId, token } = await request.json() as { name?: string, feedback: string, apiId?: string, token: string };
 
         if (!feedback) {
             return json({ error: 'Feedback is required' }, { status: 400 });
         }
 
-        const token = env.TELEGRAM_BOT_TOKEN;
+        const telegramToken = env.TELEGRAM_BOT_TOKEN;
         const chatId = env.ADMIN_CHAT_ID;
+        // Use provided secret or test secret
+        const turnstileSecret = env.TURNSTILE_SECRET_KEY || '1x00000000000000000000AA';
 
-        if (!token || !chatId) {
+        if (!telegramToken || !chatId) {
             console.error('Missing Telegram configuration');
             return json({ error: 'Server configuration error' }, { status: 500 });
+        }
+
+        // Verify Turnstile Token
+        const trResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                secret: turnstileSecret,
+                response: token,
+            }),
+        });
+
+        const trData = await trResponse.json() as any;
+
+        if (!trData.success) {
+            console.error('Turnstile verification failed:', trData);
+            return json({ error: 'Security verification failed' }, { status: 403 });
         }
 
         const messageText = `

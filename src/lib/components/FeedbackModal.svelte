@@ -6,9 +6,15 @@
         isOpen: boolean;
         onClose: () => void;
         apiId: string;
+        siteKey?: string;
     }
 
-    let { isOpen, onClose, apiId }: Props = $props();
+    let {
+        isOpen,
+        onClose,
+        apiId,
+        siteKey = "1x00000000000000000000AA",
+    }: Props = $props();
 
     let name = $state("");
     let feedback = $state("");
@@ -24,13 +30,25 @@
         submitStatus = "idle";
         errorMessage = "";
 
+        // Get Turnstile token
+        const form = e.target as HTMLFormElement;
+        const formData = new FormData(form);
+        const token = formData.get("cf-turnstile-response");
+
+        if (!token) {
+            submitStatus = "error";
+            errorMessage = "Mohon selesaikan verifikasi keamanan (CAPTCHA).";
+            isSubmitting = false;
+            return;
+        }
+
         try {
             const response = await fetch("/api/feedback", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ name, feedback, apiId }),
+                body: JSON.stringify({ name, feedback, apiId, token }),
             });
 
             if (!response.ok) {
@@ -167,6 +185,17 @@
                             ></textarea>
                         </div>
 
+                        <!-- Cloudflare Turnstile -->
+                        <div class="flex justify-center">
+                            <div
+                                class="cf-turnstile"
+                                data-sitekey={siteKey}
+                                data-theme="dark"
+                                data-callback="turnstileCallback"
+                                data-expired-callback="turnstileExpiredCallback"
+                            ></div>
+                        </div>
+
                         {#if submitStatus === "error"}
                             <div
                                 class="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400 text-center"
@@ -194,6 +223,14 @@
         </div>
     </div>
 {/if}
+
+<svelte:head>
+    <script
+        src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+        async
+        defer
+    ></script>
+</svelte:head>
 
 <style>
     /* Glass effect for close button */

@@ -88,7 +88,7 @@
       <!-- Feedback Button -->
       <button
         onclick={() => (showFeedback = true)}
-        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all"
+        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all animate-wiggle"
         aria-label="Feedback"
       >
         <MessageSquare class="w-5 h-5" />
@@ -103,5 +103,39 @@
     isOpen={showFeedback}
     onClose={() => (showFeedback = false)}
     apiId={$activeProvider}
+    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
   />
 </div>
+
+<style>
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    5% {
+      transform: rotate(-5deg);
+    }
+    10% {
+      transform: rotate(5deg);
+    }
+    15% {
+      transform: rotate(-5deg);
+    }
+    20% {
+      transform: rotate(5deg);
+    }
+    25% {
+      transform: rotate(0deg);
+    }
+  }
+
+  .animate-wiggle {
+    animation: wiggle 4s ease-in-out infinite;
+  }
+
+  /* Pause animation on hover */
+  .animate-wiggle:hover {
+    animation-play-state: paused;
+  }
+</style>
