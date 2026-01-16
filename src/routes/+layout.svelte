@@ -1,18 +1,20 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { Coffee } from "lucide-svelte";
+  import { Coffee, MessageSquare } from "lucide-svelte";
   import "../app.css";
   import Navbar from "$lib/components/Navbar.svelte";
   import DonationModal from "$lib/components/DonationModal.svelte";
+  import FeedbackModal from "$lib/components/FeedbackModal.svelte";
   import { favorites } from "$lib/stores/favorites";
   import { activeProvider } from "$lib/stores/apiState";
 
   let { children } = $props();
 
   let showDonation = $state(false);
+  let showFeedback = $state(false);
 
-  // Hide donation button on watch page
+  // Hide donation and feedback button on watch page
   let isWatchPage = $derived($page.url.pathname.startsWith("/watch"));
 
   onMount(() => {
@@ -59,32 +61,52 @@
           >
             Donasi
           </button>
+          <button
+            onclick={() => (showFeedback = true)}
+            class="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+          >
+            Feedback
+          </button>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- Floating Donation Button (hidden on watch page) -->
+  <!-- Floating Buttons (hidden on watch page) -->
   {#if !isWatchPage}
-    <button
-      onclick={() => (showDonation = true)}
-      class="fixed bottom-6 right-6 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all z-40"
-      aria-label="Donasi"
-    >
-      <Coffee class="w-5 h-5" />
-      <span class="text-sm font-semibold hidden sm:inline">Traktir Kopi</span>
-    </button>
+    <div class="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-40">
+      <!-- Donation Button -->
+      <button
+        onclick={() => (showDonation = true)}
+        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all"
+        aria-label="Donasi"
+      >
+        <Coffee class="w-5 h-5" />
+        <span class="text-sm font-semibold hidden sm:inline">Traktir Kopi</span>
+      </button>
+
+      <!-- Feedback Button -->
+      <button
+        onclick={() => (showFeedback = true)}
+        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-all"
+        aria-label="Feedback"
+      >
+        <MessageSquare class="w-5 h-5" />
+        <span class="text-sm font-semibold hidden sm:inline">Lapor Bug</span>
+      </button>
+    </div>
   {/if}
 
   <!-- Active API Badge (Debugging) -->
   {#if !isWatchPage}
     <div
-      class="fixed bottom-20 right-6 px-3 py-1.5 bg-black/80 backdrop-blur-sm border border-white/10 rounded-lg text-xs font-mono text-gray-400 z-40 pointer-events-none"
+      class="fixed bottom-32 right-6 px-3 py-1.5 bg-black/80 backdrop-blur-sm border border-white/10 rounded-lg text-xs font-mono text-gray-400 z-40 pointer-events-none"
     >
       API: {$activeProvider}
     </div>
   {/if}
 
-  <!-- Donation Modal -->
+  <!-- Modals -->
   <DonationModal isOpen={showDonation} onClose={() => (showDonation = false)} />
+  <FeedbackModal isOpen={showFeedback} onClose={() => (showFeedback = false)} />
 </div>
