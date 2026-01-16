@@ -96,9 +96,9 @@
             <!-- Header -->
             <div class="p-6 pb-4 text-center border-b border-white/10">
                 <div
-                    class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-500/20 mb-4"
+                    class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand-orange/20 mb-4"
                 >
-                    <MessageSquare class="w-7 h-7 text-blue-400" />
+                    <MessageSquare class="w-7 h-7 text-brand-orange" />
                 </div>
                 <h2 id="feedback-title" class="text-xl font-bold">
                     Feedback / Lapor Bug 🐛
@@ -140,7 +140,7 @@
                                 id="name"
                                 bind:value={name}
                                 placeholder="Nama anda"
-                                class="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-600"
+                                class="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all placeholder:text-gray-600"
                             />
                         </div>
 
@@ -157,7 +157,7 @@
                                 placeholder="Jelaskan masalah atau saran anda..."
                                 required
                                 rows="4"
-                                class="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl focus:border-blue-400 focus:ring-1 focus:ring-blue-400 outline-none transition-all placeholder:text-gray-600 resize-none"
+                                class="w-full px-4 py-3 bg-black/30 border border-white/10 rounded-xl focus:border-brand-orange focus:ring-1 focus:ring-brand-orange outline-none transition-all placeholder:text-gray-600 resize-none"
                             ></textarea>
                         </div>
 
@@ -172,7 +172,7 @@
                         <button
                             type="submit"
                             disabled={isSubmitting || !feedback.trim()}
-                            class="mt-2 w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40"
+                            class="mt-2 w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand-orange hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all shadow-lg shadow-brand-orange/20 hover:shadow-brand-orange/40"
                         >
                             {#if isSubmitting}
                                 <Loader2 class="w-5 h-5 animate-spin" />

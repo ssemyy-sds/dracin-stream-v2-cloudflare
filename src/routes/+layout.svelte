@@ -63,7 +63,7 @@
           </button>
           <button
             onclick={() => (showFeedback = true)}
-            class="text-sm text-gray-400 hover:text-blue-400 transition-colors"
+            class="text-sm text-gray-400 hover:text-brand-orange transition-colors"
           >
             Feedback
           </button>
@@ -88,7 +88,7 @@
       <!-- Feedback Button -->
       <button
         onclick={() => (showFeedback = true)}
-        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-500 rounded-full shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-all"
+        class="flex items-center gap-2 px-4 py-3 bg-black/80 backdrop-blur-md border border-brand-orange/50 text-brand-orange rounded-full shadow-lg shadow-black/50 hover:bg-black hover:scale-105 transition-all"
         aria-label="Feedback"
       >
         <MessageSquare class="w-5 h-5" />
