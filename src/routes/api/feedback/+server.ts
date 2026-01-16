@@ -12,8 +12,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
         const telegramToken = env.TELEGRAM_BOT_TOKEN;
         const chatId = env.ADMIN_CHAT_ID;
-        // Use provided secret or test secret
-        const turnstileSecret = env.TURNSTILE_SECRET_KEY || '1x00000000000000000000AA';
+        const turnstileSecret = env.TURNSTILE_SECRET_KEY;
 
         if (!telegramToken || !chatId) {
             console.error('Missing Telegram configuration');
