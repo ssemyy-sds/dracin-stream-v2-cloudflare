@@ -5,9 +5,10 @@
     interface Props {
         isOpen: boolean;
         onClose: () => void;
+        apiId: string;
     }
 
-    let { isOpen, onClose }: Props = $props();
+    let { isOpen, onClose, apiId }: Props = $props();
 
     let name = $state("");
     let feedback = $state("");
@@ -29,7 +30,7 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ name, feedback }),
+                body: JSON.stringify({ name, feedback, apiId }),
             });
 
             if (!response.ok) {
@@ -103,6 +104,11 @@
                 <h2 id="feedback-title" class="text-xl font-bold">
                     Feedback / Lapor Bug 🐛
                 </h2>
+                <div
+                    class="mt-2 inline-flex items-center px-2 py-1 rounded bg-black/40 border border-white/5 text-xs text-gray-400 font-mono"
+                >
+                    API ID: {apiId}
+                </div>
                 <p class="text-sm text-gray-400 mt-2">
                     Masukan anda membantu kami berkembang.
                 </p>

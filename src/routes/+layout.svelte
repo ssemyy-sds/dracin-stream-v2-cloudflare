@@ -88,7 +88,7 @@
       <!-- Feedback Button -->
       <button
         onclick={() => (showFeedback = true)}
-        class="flex items-center gap-2 px-4 py-3 bg-black/80 backdrop-blur-md border border-brand-orange/50 text-brand-orange rounded-full shadow-lg shadow-black/50 hover:bg-black hover:scale-105 transition-all"
+        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all"
         aria-label="Feedback"
       >
         <MessageSquare class="w-5 h-5" />
@@ -97,16 +97,11 @@
     </div>
   {/if}
 
-  <!-- Active API Badge (Debugging) -->
-  {#if !isWatchPage}
-    <div
-      class="fixed bottom-32 right-6 px-3 py-1.5 bg-black/80 backdrop-blur-sm border border-white/10 rounded-lg text-xs font-mono text-gray-400 z-40 pointer-events-none"
-    >
-      API: {$activeProvider}
-    </div>
-  {/if}
-
   <!-- Modals -->
   <DonationModal isOpen={showDonation} onClose={() => (showDonation = false)} />
-  <FeedbackModal isOpen={showFeedback} onClose={() => (showFeedback = false)} />
+  <FeedbackModal
+    isOpen={showFeedback}
+    onClose={() => (showFeedback = false)}
+    apiId={$activeProvider}
+  />
 </div>

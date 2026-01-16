@@ -4,7 +4,7 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
-        const { name, feedback } = await request.json() as { name?: string, feedback: string };
+        const { name, feedback, apiId } = await request.json() as { name?: string, feedback: string, apiId?: string };
 
         if (!feedback) {
             return json({ error: 'Feedback is required' }, { status: 400 });
@@ -22,6 +22,7 @@ export const POST: RequestHandler = async ({ request }) => {
 <b>🔔 New Feedback / Report</b>
 
 <b>👤 Name:</b> ${name || 'Anonymous'}
+<b>🔌 API ID:</b> ${apiId || 'Unknown'}
 <b>📝 Message:</b>
 ${feedback}
 `;
