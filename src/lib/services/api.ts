@@ -524,3 +524,49 @@ export async function getDramasByCategory(type: CategoryType, page = 1): Promise
         default: return getTrending();
     }
 }
+// ============= FLICKREELS FUNCTIONS =============
+
+/**
+ * Get FlickReels home/trending/latest
+ */
+export async function getFlickReelsHome(type: 'home' | 'latest' | 'trending' = 'home', page = 1): Promise<Drama[]> {
+    const { data, providerId } = await fetchApi(type, {
+        provider: 'api_flickreels',
+        page: page.toString()
+    });
+    const list = getList(data);
+    return list.map((item: any) => normalizeDrama(item, 'api_flickreels'));
+}
+
+/**
+ * Get FlickReels detail and episodes
+ */
+export async function getFlickReelsDetail(id: string): Promise<{ drama: Drama, episodes: Episode[] }> {
+    const { data, providerId } = await fetchApi('detail', {
+        provider: 'api_flickreels',
+        bookId: id
+    });
+
+    const item = data.data || data;
+    const drama = normalizeDrama(item, 'api_flickreels');
+
+    // FlickReels typically returns chapters in the same response for this endpoint
+    const chapterList = item.chapters || item.episodes || item.list || (Array.isArray(data) ? data : []);
+    const episodes = Array.isArray(chapterList)
+        ? chapterList.map((ep: any) => normalizeEpisode(ep, 'api_flickreels'))
+        : [];
+
+    return { drama, episodes };
+}
+
+/**
+ * Search FlickReels
+ */
+export async function searchFlickReels(query: string): Promise<Drama[]> {
+    const { data, providerId } = await fetchApi('search', {
+        provider: 'api_flickreels',
+        query
+    });
+    const list = getList(data);
+    return list.map((item: any) => normalizeDrama(item, 'api_flickreels'));
+}

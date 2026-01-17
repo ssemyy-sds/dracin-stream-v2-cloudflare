@@ -102,3 +102,5 @@ To bypass cross-domain restrictions (CORS/Referer):
 - **Home**: `https://dramabos.asia/api/melolo/api/v1/home?offset=0&count=20&lang=id`
 - **Detail**: `https://dramabos.asia/api/melolo/api/v1/detail/{id}?lang=id`
 - **Stream**: `https://dramabos.asia/api/melolo/api/v1/video/{vid}?lang=id`
+## TAKE URL FROM **Stream** with definition 720p only 
+#example of url is like this https://v16m.byteicdn.com/7cdef04a4c8522a244a2f0715ce172d7/69690081/video/tos/alisg/tos-alisg-v-ea7654-sg/oIKRQQZID5hgoBExgEfgxcgraFPGTpBQejShyN/?a=645713&bti=bmQxaGwxaHJAYG1sYXNpc2tg&ch=0&cr=7&dr=0&er=0&lr=default&cd=0%7C0%7C0%7C1&cv=1&br=1714&bt=857&cs=4&ds=3&ft=EeF4ntZWD00Q12NvYMYb.IxRwOkrpq_45SY&mime_type=video_mp4&qs=0&rc=OzY8NTpnOjU1Zmk3ZjNkZkBpanJscms5cjk7OGYzODs4NEBeYmI0NmExXi8xLy1hYmIxYSNobm9nMmRjZDBhLS1kLS1zcw%3D%3D&vvpl=1&l=20260115165636878A5E644AAA9A548294&btag=e00090000&cc=10

@@ -50,6 +50,7 @@
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
+    { href: "/flickreels", label: "FlickReels", icon: PlayCircle },
     { href: "/category/trending", label: "Trending", icon: TrendingUp },
     { href: "/category/vip", label: "VIP", icon: Crown },
   ];

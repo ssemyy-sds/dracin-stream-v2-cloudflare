@@ -158,6 +158,32 @@ export const API_CONFIGS: APIConfig[] = [
             expectedStatus: 200,
             timeout: 5000
         }
+    },
+
+    // API 5 - FlickReels (api.sansekai.my.id/api/flickreels)
+    {
+        id: 'api_flickreels',
+        name: 'FlickReels API',
+        baseUrl: 'https://api.sansekai.my.id/api/flickreels',
+        priority: 2,
+        queryFormat: 'path',
+        endpoints: {
+            home: '/foryou',
+            search: '/search',
+            detail: '/detailAndAllEpisode',
+            episodes: '/detailAndAllEpisode',
+            stream: '/detailAndAllEpisode', // FlickReels combines these
+            trending: '/hotrank'
+        },
+        headers: {
+            'User-Agent': 'Dracin-Stream/2.0',
+            'Accept': 'application/json'
+        },
+        healthCheck: {
+            endpoint: '/foryou',
+            expectedStatus: 200,
+            timeout: 5000
+        }
     }
 ];
 

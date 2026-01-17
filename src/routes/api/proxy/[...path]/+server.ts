@@ -190,6 +190,31 @@ export const GET: RequestHandler = async ({ url, params, platform, request }) =>
             const paxQuery = paxParams.toString();
             targetUrl = `${apiConfig.baseUrl}${mappedPath}${paxQuery ? '?' + paxQuery : ''}`;
 
+        } else if (apiConfig.id === 'api_flickreels') {
+            // FlickReels endpoint mapping
+            const flickReelsMap: Record<string, string> = {
+                'home': '/foryou',
+                'latest': '/latest',
+                'trending': '/hotrank',
+                'search': '/search',
+                'detail': '/detailAndAllEpisode',
+                'allepisode': '/detailAndAllEpisode',
+                'stream': '/detailAndAllEpisode'
+            };
+
+            const mappedPath = flickReelsMap[actionPath] || `/${actionPath}`;
+
+            // Map parameters
+            const flickParams = new URLSearchParams();
+            if (keyword) flickParams.set('query', keyword);
+            if (bookId) flickParams.set('id', bookId);
+
+            // Page/Size handling if needed
+            if (queryParams.has('page')) flickParams.set('page', queryParams.get('page')!);
+            if (queryParams.has('size')) flickParams.set('size', queryParams.get('size')!);
+
+            const finalQuery = flickParams.toString();
+            targetUrl = `${apiConfig.baseUrl}${mappedPath}${finalQuery ? '?' + finalQuery : ''}`;
         } else {
             // Primary (Sansekai) - standard path mapping
             // Note: /home returns HTML on Sansekai, use /trending instead

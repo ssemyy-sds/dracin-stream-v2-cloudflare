@@ -77,6 +77,14 @@ export function normalizeDrama(data: any, providerId: string): Drama {
         } else if (data.corner && typeof data.corner === 'string') {
             drama.cornerLabel = data.corner;
         }
+    } else if (providerId === 'api_flickreels') {
+        // FlickReels specific normalization
+        if (data.title && !drama.bookName) {
+            drama.bookName = data.title;
+        }
+        if (data.coverUrl && !drama.cover) {
+            drama.cover = fixUrl(data.coverUrl);
+        }
     }
 
     return drama;

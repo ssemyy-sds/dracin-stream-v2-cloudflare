@@ -12,13 +12,19 @@
 
   let { drama, compact = false }: Props = $props();
 
+  let detailUrl = $derived(
+    drama.bookId.startsWith("fr-")
+      ? `/flickreels/detail/${drama.bookId.replace("fr-", "")}`
+      : `/detail/${drama.bookId}`,
+  );
+
   function handleClick() {
     selectedDrama.setSelected(drama);
   }
 </script>
 
 <a
-  href="/detail/{drama.bookId}"
+  href={detailUrl}
   onclick={handleClick}
   class="group relative block overflow-hidden rounded-xl bg-brand-dark transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-brand-orange/10"
 >
