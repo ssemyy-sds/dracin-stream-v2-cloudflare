@@ -246,7 +246,8 @@ export async function getStreamUrl(bookId: string, episodeNum: number, chapterId
             debugLog(`[API] Fetching stream directly for chapterId: ${chapterId}`);
             const { data: streamData } = await fetchApi('stream', {
                 bookId,
-                chapterId
+                chapterId,
+                episode: episodeNum.toString()
             });
 
             return normalizeStreamResponse(streamData);
@@ -372,12 +373,23 @@ function normalizeStreamResponse(streamData: any): QualityOption[] {
     // Final Sort: Highest quality first
     options.sort((a, b) => b.quality - a.quality);
 
-    // If no default was set (e.g. no 720p found), set the first one (highest)
-    if (options.length > 0 && !options.some(o => o.isDefault)) {
-        options[0].isDefault = true;
+    // Filter out duplicates (sometimes same quality with different URLs)
+    const uniqueOptions = options.filter((opt, index, self) =>
+        index === self.findIndex((t) => (
+            t.quality === opt.quality && t.videoUrl === opt.videoUrl
+        ))
+    );
+
+    // If no default was set, prioritize 1080p, then 720p, then highest
+    if (uniqueOptions.length > 0) {
+        let defaultIdx = uniqueOptions.findIndex(o => o.quality === 1080);
+        if (defaultIdx === -1) defaultIdx = uniqueOptions.findIndex(o => o.quality === 720);
+        if (defaultIdx === -1) defaultIdx = 0; // Highest available
+
+        uniqueOptions.forEach((o, i) => o.isDefault = (i === defaultIdx));
     }
 
-    return options;
+    return uniqueOptions;
 }
 
 /**

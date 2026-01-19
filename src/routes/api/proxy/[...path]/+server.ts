@@ -190,6 +190,39 @@ export const GET: RequestHandler = async ({ url, params, platform, request }) =>
             const paxQuery = paxParams.toString();
             targetUrl = `${apiConfig.baseUrl}${mappedPath}${paxQuery ? '?' + paxQuery : ''}`;
 
+        } else if (apiConfig.id === 'api_backup3') {
+            // Hafiz API mapping
+            const hafizMap: Record<string, string> = {
+                'home': '/dramas/indo',
+                'search': '/search',
+                'detail': '/dramas',
+                'allepisode': '/dramas',
+                'stream': '/chapters/video'
+            };
+
+            let mappedPath = hafizMap[actionPath] || `/${actionPath}`;
+
+            // Handle ID in path for detail/allepisode
+            if (['detail', 'allepisode'].includes(actionPath) && bookId) {
+                mappedPath = `${mappedPath}/${bookId}`;
+            }
+
+            const hParams = new URLSearchParams();
+            if (keyword) hParams.set('keyword', keyword);
+            if (page) hParams.set('page', page);
+            if (queryParams.has('size')) hParams.set('size', queryParams.get('size')!);
+
+            // Special handling for stream: book_id and episode
+            if (actionPath === 'stream') {
+                if (bookId) hParams.set('book_id', bookId);
+                // Note: normalized episode number starts from 1
+                const ep = queryParams.get('episode') || queryParams.get('chapterIndex') || '1';
+                hParams.set('episode', ep);
+            }
+
+            const hQuery = hParams.toString();
+            targetUrl = `${apiConfig.baseUrl}${mappedPath}${hQuery ? '?' + hQuery : ''}`;
+
         } else if (apiConfig.id === 'api_flickreels') {
             // FlickReels endpoint mapping
             const flickReelsMap: Record<string, string> = {

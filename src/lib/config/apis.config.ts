@@ -184,11 +184,36 @@ export const API_CONFIGS: APIConfig[] = [
             expectedStatus: 200,
             timeout: 5000
         }
+    },
+
+    // API 6 - Backup 3 (Hafiz Hibnusyam)
+    {
+        id: 'api_backup3',
+        name: 'Backup API 3 (Hafiz)',
+        baseUrl: 'https://db.hafizhibnusyam.my.id/api',
+        priority: 1,
+        queryFormat: 'path',
+        endpoints: {
+            home: '/dramas/indo',
+            search: '/search',
+            detail: '/dramas',
+            episodes: '/dramas',
+            stream: '/chapters/video'
+        },
+        headers: {
+            'User-Agent': 'Dracin-Stream/2.0',
+            'Accept': 'application/json'
+        },
+        healthCheck: {
+            endpoint: '/dramas/indo?page=1',
+            expectedStatus: 200,
+            timeout: 5000
+        }
     }
 ];
 
-// Default to backup2 since others are down
-export const DEFAULT_API_ID = 'api_backup2';
+// Default to backup3 since it's the newest
+export const DEFAULT_API_ID = 'api_backup3';
 
 // Helper function to get API config by ID
 export function getAPIConfig(apiId: string): APIConfig | undefined {

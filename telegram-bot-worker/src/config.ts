@@ -69,7 +69,7 @@ export const API_CONFIGS: APIConfig[] = [
         id: 'api_secondary',
         name: 'Secondary API (Gimita)',
         baseUrl: 'https://api.gimita.id/api/search/dramabox',
-        priority: 2,
+        priority: 4,
         queryFormat: 'action',
         endpoints: {
             home: 'home',
@@ -99,18 +99,18 @@ export const API_CONFIGS: APIConfig[] = [
     {
         id: 'api_backup1',
         name: 'Backup API 1 (Dramabos)',
-        baseUrl: 'https://dramabos.asia/api/dramabox',
+        baseUrl: 'https://dramabos.asia/api/melolo/api/v1',
         priority: 3,
         queryFormat: 'path',
         endpoints: {
-            home: '/foryou/1',
-            search: '/search', // Currently 503
-            detail: '/drama', // /{bookId}
-            episodes: '/chapters', // /{bookId}
-            stream: '/watch/player',
-            trending: '/rank/1',
-            vip: '/new/1',
-            categories: '/classify'
+            home: '/home', // ?offset=0&count=18&lang=id
+            search: '/search', // ?q={query}
+            detail: '/detail', // /{bookId}?lang=id
+            episodes: '/detail', // /{bookId}?lang=id (Same as detail, as it likely contains chapters)
+            stream: '/video', // /{chapterId}?lang=id
+            trending: '/home', // fallback to home
+            vip: '/home', // fallback to home
+            categories: '/home' // fallback to home
         },
         headers: {
             'User-Agent': 'Dracin-Stream/2.0',
@@ -121,7 +121,7 @@ export const API_CONFIGS: APIConfig[] = [
             period: 60
         },
         healthCheck: {
-            endpoint: '/foryou/1',
+            endpoint: '/home',
             expectedStatus: 200,
             timeout: 5000
         }
@@ -132,7 +132,7 @@ export const API_CONFIGS: APIConfig[] = [
         id: 'api_backup2',
         name: 'Backup API 2 (Paxsenix)',
         baseUrl: 'https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app',
-        priority: 4,
+        priority: 1,
         queryFormat: 'path',
         endpoints: {
             home: '/api/home',
@@ -158,11 +158,62 @@ export const API_CONFIGS: APIConfig[] = [
             expectedStatus: 200,
             timeout: 5000
         }
+    },
+
+    // API 5 - FlickReels (api.sansekai.my.id/api/flickreels)
+    {
+        id: 'api_flickreels',
+        name: 'FlickReels API',
+        baseUrl: 'https://api.sansekai.my.id/api/flickreels',
+        priority: 2,
+        queryFormat: 'path',
+        endpoints: {
+            home: '/foryou',
+            search: '/search',
+            detail: '/detailAndAllEpisode',
+            episodes: '/detailAndAllEpisode',
+            stream: '/detailAndAllEpisode', // FlickReels combines these
+            trending: '/hotrank'
+        },
+        headers: {
+            'User-Agent': 'Dracin-Stream/2.0',
+            'Accept': 'application/json'
+        },
+        healthCheck: {
+            endpoint: '/foryou',
+            expectedStatus: 200,
+            timeout: 5000
+        }
+    },
+
+    // API 6 - Backup 3 (Hafiz Hibnusyam)
+    {
+        id: 'api_backup3',
+        name: 'Backup API 3 (Hafiz)',
+        baseUrl: 'https://db.hafizhibnusyam.my.id/api',
+        priority: 1,
+        queryFormat: 'path',
+        endpoints: {
+            home: '/dramas/indo',
+            search: '/search',
+            detail: '/dramas',
+            episodes: '/dramas',
+            stream: '/chapters/video'
+        },
+        headers: {
+            'User-Agent': 'Dracin-Stream/2.0',
+            'Accept': 'application/json'
+        },
+        healthCheck: {
+            endpoint: '/dramas/indo?page=1',
+            expectedStatus: 200,
+            timeout: 5000
+        }
     }
 ];
 
-// Default to backup2 since others are down (synced with src/lib/config/apis.config.ts)
-export const DEFAULT_API_ID = 'api_backup2';
+// Default to backup2 since others are down
+export const DEFAULT_API_ID = 'api_backup3';
 
 // Helper function to get API config by ID
 export function getAPIConfig(apiId: string): APIConfig | undefined {
