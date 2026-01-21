@@ -11,10 +11,10 @@ export const load: PageServerLoad = async ({ fetch, platform }) => {
         return { error: 'Configuration Error' };
     }
 
-    console.log('Fetching Drakor home from:', `${api}/api/drakor/home`);
+    console.log('Fetching Drakor home from:', `${api}/api/dramaid/home?page=1`);
 
     try {
-        const res = await fetch(`${api}/api/drakor/home`, {
+        const res = await fetch(`${api}/api/dramaid/home?page=1`, {
             headers: { 'Accept': 'application/json' }
         });
 
@@ -24,24 +24,32 @@ export const load: PageServerLoad = async ({ fetch, platform }) => {
         }
 
         const json = await res.json();
+        let rawData: any[] = [];
 
-        // Filter content logic
-        const filterByCountry = (items: any[]) => {
-            if (!Array.isArray(items)) return [];
-            return items.filter(item => item.negara === 'Korea Selatan');
-        };
-
-        if (json.data) {
-            if (json.data.trending) {
-                json.data.trending = filterByCountry(json.data.trending);
-            }
-            if (json.data.newReleases) {
-                json.data.newReleases = filterByCountry(json.data.newReleases);
-            }
+        // Normalize response data
+        if (Array.isArray(json)) {
+            rawData = json;
+        } else if (Array.isArray(json?.data)) {
+            rawData = json.data;
         }
 
-        return { data: json.data };
+        // Filter for Korea Selatan
+        const koreanDramas = rawData.filter((item: any) =>
+            item.negara === 'Korea Selatan' || item.country === 'Korea Selatan'
+        );
+
+        // Split into sections for UI
+        const trending = koreanDramas.slice(0, 5);
+        const newReleases = koreanDramas.slice(5);
+
+        return {
+            data: {
+                trending,
+                newReleases
+            }
+        };
     } catch (err) {
+        // Fallback or empty data
         console.error('Drakor API Error:', err);
         return { error: 'Failed to load content' };
     }
