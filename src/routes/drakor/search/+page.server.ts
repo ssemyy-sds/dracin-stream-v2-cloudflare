@@ -1,14 +1,15 @@
 import type { PageServerLoad } from './$types';
+import { dev } from '$app/environment';
 
 export const load: PageServerLoad = async ({ url, fetch, platform }) => {
     const query = url.searchParams.get('q');
-    const api = platform?.env?.API_BASE_URL;
+    const api = platform?.env?.API_BASE_URL || (dev ? 'https://dramabos.asia' : '');
 
     if (!api) return { error: 'Configuration Error' };
     if (!query) return { results: [] };
 
     try {
-        const res = await fetch(`${api}/api/drakor/search?q=${encodeURIComponent(query)}`, {
+        const res = await fetch(`${api}/api/dramaid/search?q=${encodeURIComponent(query)}`, {
             headers: { 'Accept': 'application/json' }
         });
 
@@ -16,7 +17,7 @@ export const load: PageServerLoad = async ({ url, fetch, platform }) => {
 
         const json = await res.json();
         return {
-            results: json.data || [],
+            results: json.data || json || [],
             query
         };
     } catch (err) {

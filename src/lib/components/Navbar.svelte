@@ -49,7 +49,10 @@
   function handleSearch(e: Event) {
     e.preventDefault();
     if (searchQuery.trim()) {
-      goto(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const isDrakor = $page.url.pathname.startsWith("/drakor");
+      const searchPath = isDrakor ? "/drakor/search" : "/search";
+
+      goto(`${searchPath}?q=${encodeURIComponent(searchQuery.trim())}`);
       isSearchOpen = false;
       searchQuery = "";
     }
