@@ -1,6 +1,8 @@
 <script lang="ts">
   import { page } from "$app/stores";
+
   import { goto } from "$app/navigation";
+  import ModeSwitcher from "$lib/components/ModeSwitcher.svelte";
   import {
     PlayCircle,
     Search,
@@ -10,18 +12,27 @@
     Home,
     TrendingUp,
     Crown,
+    Coffee,
+    MessageSquare,
   } from "lucide-svelte";
   import {
     favorites,
     favoritesCount,
     recentFavorites,
   } from "$lib/stores/favorites";
+  import { activeProvider } from "$lib/stores/apiState";
+  import DonationModal from "$lib/components/DonationModal.svelte";
+  import FeedbackModal from "$lib/components/FeedbackModal.svelte";
   import { fixUrl, truncateText } from "$lib/utils/helpers";
+
+  let { data } = $props();
 
   let isMenuOpen = $state(false);
   let isSearchOpen = $state(false);
   let isScrolled = $state(false);
   let showWatchlist = $state(false);
+  let showDonation = $state(false);
+  let showFeedback = $state(false);
   let searchQuery = $state("");
 
   // Handle scroll for navbar background
@@ -88,6 +99,11 @@
 
       <!-- Actions -->
       <div class="flex items-center gap-3">
+        <!-- Mode Switcher (Desktop) -->
+        <div class="hidden md:block">
+          <ModeSwitcher />
+        </div>
+
         <!-- Search (Desktop) -->
         <div class="hidden md:block relative">
           {#if isSearchOpen}
@@ -234,6 +250,10 @@
 
         <!-- Mobile Nav Links -->
         <div class="space-y-2">
+          <div class="flex justify-center pb-2">
+            <ModeSwitcher />
+          </div>
+
           {#each navLinks as link}
             <a
               href={link.href}
@@ -265,8 +285,38 @@
               </span>
             {/if}
           </a>
+
+          <button
+            onclick={() => {
+              closeMenu();
+              showDonation = true;
+            }}
+            class="flex w-full items-center gap-4 p-4 rounded-xl hover:bg-brand-gray transition-colors text-white"
+          >
+            <Coffee class="w-5 h-5" />
+            <span class="font-medium">Traktir Kopi</span>
+          </button>
+
+          <button
+            onclick={() => {
+              closeMenu();
+              showFeedback = true;
+            }}
+            class="flex w-full items-center gap-4 p-4 rounded-xl hover:bg-brand-gray transition-colors text-white"
+          >
+            <MessageSquare class="w-5 h-5" />
+            <span class="font-medium">Lapor Bug</span>
+          </button>
         </div>
       </div>
     </div>
   {/if}
+  <!-- Modals -->
+  <DonationModal isOpen={showDonation} onClose={() => (showDonation = false)} />
+  <FeedbackModal
+    isOpen={showFeedback}
+    onClose={() => (showFeedback = false)}
+    apiId={$activeProvider}
+    siteKey={data?.turnstileSiteKey}
+  />
 </nav>

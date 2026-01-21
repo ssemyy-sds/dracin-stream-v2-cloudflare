@@ -7,6 +7,10 @@
   import { selectedDrama } from "$lib/stores/drama";
   import type { Drama } from "$lib/types";
 
+  import ModePopup from "$lib/components/ModePopup.svelte";
+
+  let { data } = $props();
+
   // Hero carousel data
   let heroItems = $state<Drama[]>([]);
   let currentSlide = $state(0);

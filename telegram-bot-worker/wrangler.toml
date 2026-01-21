@@ -9,11 +9,11 @@ compatibility_date = "2024-01-01"
 [[kv_namespaces]]
 binding = "API_CONFIG"
 # Set KV namespace ID via environment or use: wrangler kv:namespace list
-id = "" # Set via CI/CD or local .dev.vars
+id = "628f407be7194841861f526e3a421ec0" # Set via CI/CD or local .dev.vars
 
 [env.production]
 # Production secrets should be set via Cloudflare dashboard or wrangler secret
 
 [[env.production.kv_namespaces]]
 binding = "API_CONFIG"
-id = "" # Set via CI/CD
+id = "628f407be7194841861f526e3a421ec0" # Set via CI/CD

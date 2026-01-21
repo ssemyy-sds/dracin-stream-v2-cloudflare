@@ -1,21 +1,12 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/stores";
-  import { Coffee, MessageSquare } from "lucide-svelte";
   import "../app.css";
   import Navbar from "$lib/components/Navbar.svelte";
-  import DonationModal from "$lib/components/DonationModal.svelte";
-  import FeedbackModal from "$lib/components/FeedbackModal.svelte";
   import { favorites } from "$lib/stores/favorites";
   import { activeProvider } from "$lib/stores/apiState";
 
   let { children, data } = $props();
-
-  let showDonation = $state(false);
-  let showFeedback = $state(false);
-
-  // Hide donation and feedback button on watch page
-  let isWatchPage = $derived($page.url.pathname.startsWith("/watch"));
 
   onMount(() => {
     favorites.init();
@@ -55,54 +46,10 @@
           >
             Trending
           </a>
-          <button
-            onclick={() => (showDonation = true)}
-            class="text-sm text-gray-400 hover:text-brand-orange transition-colors"
-          >
-            Donasi
-          </button>
-          <button
-            onclick={() => (showFeedback = true)}
-            class="text-sm text-gray-400 hover:text-brand-orange transition-colors"
-          >
-            Feedback
-          </button>
         </div>
       </div>
     </div>
   </footer>
 
-  <!-- Floating Buttons (hidden on watch page) -->
-  {#if !isWatchPage}
-    <div class="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-40">
-      <!-- Donation Button -->
-      <button
-        onclick={() => (showDonation = true)}
-        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all"
-        aria-label="Donasi"
-      >
-        <Coffee class="w-5 h-5" />
-        <span class="text-sm font-semibold hidden sm:inline">Traktir Kopi</span>
-      </button>
-
-      <!-- Feedback Button -->
-      <button
-        onclick={() => (showFeedback = true)}
-        class="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-brand-orange to-orange-600 rounded-full shadow-lg shadow-brand-orange/30 hover:shadow-brand-orange/50 hover:scale-105 transition-all"
-        aria-label="Feedback"
-      >
-        <MessageSquare class="w-5 h-5" />
-        <span class="text-sm font-semibold hidden sm:inline">Lapor Bug</span>
-      </button>
-    </div>
-  {/if}
-
-  <!-- Modals -->
-  <DonationModal isOpen={showDonation} onClose={() => (showDonation = false)} />
-  <FeedbackModal
-    isOpen={showFeedback}
-    onClose={() => (showFeedback = false)}
-    apiId={$activeProvider}
-    siteKey={data.turnstileSiteKey}
-  />
+  <!-- Modals moved to Navbar -->
 </div>

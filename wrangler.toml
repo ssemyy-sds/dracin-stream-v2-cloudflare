@@ -25,3 +25,8 @@ mode = "smart"
 [[kv_namespaces]]
 binding = "API_CONFIG"
 id = "628f407be7194841861f526e3a421ec0"
+
+[vars]
+API_BASE_URL = "https://dramabos.asia"
+DRAKOR_ENABLED = "true"
+MODE_POPUP_ENABLED = "true"
