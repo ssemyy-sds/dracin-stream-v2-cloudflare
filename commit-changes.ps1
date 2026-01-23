@@ -1,6 +1,6 @@
 # Git commit script using GitHub Desktop's git
 $gitPath = "C:\Users\suryanata\AppData\Local\GitHubDesktop\app-3.5.4\resources\app\git\cmd\git.exe"
-$commitMessage = "Update Sansekai API as default provider - confirmed working via handshake test"
+$commitMessage = "Add API Backup 4 (Dramabox Sansekai) with full endpoint support"
 
 Write-Host "Adding files..." -ForegroundColor Cyan
 & $gitPath add .

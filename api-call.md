@@ -34,6 +34,7 @@ const [home, recommend, vip] = await Promise.all([
 | `api_secondary` (Gimita) | `https://api.gimita.id/api/search/dramabox?action=home&page=1&size=20` |
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/foryou/1` |
 | `api_primary` (Sansekai) ✅ DEFAULT | `https://api.sansekai.my.id/api/dramabox/trending?page=1&size=20` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/trending?page=1&size=20` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/home` |
 
 ### Your Comments
@@ -57,6 +58,7 @@ OK
 | `api_backup1` (Dramabos) | ❌ No `recommend` endpoint, fallback to `getForYou()` → `home` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/randomdrama` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/recommend` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/randomdrama` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here
@@ -82,6 +84,7 @@ https://api.sansekai.my.id/api/dramabox/randomdrama
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/new/1` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/vip` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/vip` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/vip` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here
@@ -110,6 +113,7 @@ for api_primary please use below URL call instead
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/drama/12345` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/detail?bookId=12345` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/detail/12345/v2` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/detail?bookId=12345` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here 
@@ -142,6 +146,7 @@ for api_backup2 please use below URL call instead
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/chapters/12345` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/allepisode?bookId=12345` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/chapters/12345` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/allepisode?bookId=12345` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here 
@@ -167,6 +172,7 @@ _Note: This is only called if the episode list doesn't contain video URLs._
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/watch/player?bookId=123&chapterId=456` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/allepisode?bookId=123` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/stream?bookId=123&chapterId=456` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/allepisode?bookId=123` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here 
@@ -190,6 +196,7 @@ for stream should be take same from getAllEpisodes() and looking for/findings pa
 | `api_backup1` (Dramabos) | `https://dramabos.asia/api/dramabox/search/love/1` |
 | `api_primary` (Sansekai) ✅ Working | `https://api.sansekai.my.id/api/dramabox/search?query=love` |
 | `api_backup2` (Paxsenix) | `https://kdjekek-usieke-owjejxkek-iwjwjxkod.vercel.app/api/search?keyword=love` |
+| `api_backup4` (Dramabox Sansekai) ✅ Working | `https://dramabox.sansekai.my.id/api/dramabox/search?query=love` |
 
 ### Your Comments
 <!-- Add your comments about incorrect URLs here -->

@@ -248,6 +248,18 @@ export const GET: RequestHandler = async ({ url, params, platform, request }) =>
 
             const finalQuery = flickParams.toString();
             targetUrl = `${apiConfig.baseUrl}${mappedPath}${finalQuery ? '?' + finalQuery : ''}`;
+        } else if (apiConfig.id === 'api_backup4') {
+            // Backup 4 (Dramabox Sansekai) - same as primary
+            if (actionPath === 'home') {
+                actionPath = 'trending';
+            } else if (actionPath === 'recommend') {
+                actionPath = 'randomdrama';
+            } else if (actionPath === 'detail') {
+                actionPath = 'allepisode';
+            }
+
+            const queryString = queryParams.toString();
+            targetUrl = `${apiConfig.baseUrl}/${actionPath}${queryString ? '?' + queryString : ''}`;
         } else {
             // Primary (Sansekai) - standard path mapping
             // Note: /home returns HTML on Sansekai, use /trending instead

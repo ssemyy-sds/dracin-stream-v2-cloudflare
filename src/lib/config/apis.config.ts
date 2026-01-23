@@ -209,6 +209,37 @@ export const API_CONFIGS: APIConfig[] = [
             expectedStatus: 200,
             timeout: 5000
         }
+    },
+
+    // API 7 - Backup 4 (Dramabox Sansekai Mirror)
+    {
+        id: 'api_backup4',
+        name: 'Backup API 4 (Dramabox Sansekai)',
+        baseUrl: 'https://dramabox.sansekai.my.id/api/dramabox',
+        priority: 2,
+        queryFormat: 'path',
+        endpoints: {
+            home: '/trending',
+            search: '/search',
+            detail: '/detail',
+            episodes: '/allepisode',
+            stream: '/allepisode',
+            trending: '/trending',
+            vip: '/vip'
+        },
+        headers: {
+            'User-Agent': 'Dracin-Stream/2.0',
+            'Accept': 'application/json'
+        },
+        rateLimit: {
+            requests: 100,
+            period: 60
+        },
+        healthCheck: {
+            endpoint: '/trending',
+            expectedStatus: 200,
+            timeout: 5000
+        }
     }
 ];
 
