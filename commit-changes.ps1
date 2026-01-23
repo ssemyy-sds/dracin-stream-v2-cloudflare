@@ -1,6 +1,6 @@
 # Git commit script using GitHub Desktop's git
 $gitPath = "C:\Users\suryanata\AppData\Local\GitHubDesktop\app-3.5.4\resources\app\git\cmd\git.exe"
-$commitMessage = "Add API Backup 4 (Dramabox Sansekai) with full endpoint support"
+$commitMessage = "Update Telegram bot config to include API Backup 4 and set api_primary as default"
 
 Write-Host "Adding files..." -ForegroundColor Cyan
 & $gitPath add .
