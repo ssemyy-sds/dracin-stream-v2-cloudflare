@@ -212,8 +212,8 @@ export const API_CONFIGS: APIConfig[] = [
     }
 ];
 
-// Default to backup3 since it's the newest
-export const DEFAULT_API_ID = 'api_backup3';
+// Default to Sansekai (api_primary) - confirmed working via handshake test 2026-01-23
+export const DEFAULT_API_ID = 'api_primary';
 
 // Helper function to get API config by ID
 export function getAPIConfig(apiId: string): APIConfig | undefined {
