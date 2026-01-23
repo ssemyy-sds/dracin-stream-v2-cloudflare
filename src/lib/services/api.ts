@@ -244,11 +244,26 @@ export async function getStreamUrl(bookId: string, episodeNum: number, chapterId
     if (chapterId && chapterId !== '' && !chapterId.startsWith('virtual-')) {
         try {
             debugLog(`[API] Fetching stream directly for chapterId: ${chapterId}`);
-            const { data: streamData } = await fetchApi('stream', {
+            const { data: streamData, providerId: streamProvider } = await fetchApi('stream', {
                 bookId,
                 chapterId,
                 episode: episodeNum.toString()
             });
+
+            // Handle if streamData is the full episode list (like from api_backup4)
+            // Some providers return the full list even for stream request
+            if (Array.isArray(streamData)) {
+                const found = streamData.find((e: any) =>
+                    (e.chapterId == chapterId) ||
+                    (e.id == chapterId) ||
+                    (e.vid == chapterId)
+                );
+
+                if (found) {
+                    const ep = normalizeEpisode(found, streamProvider);
+                    if (ep.qualityOptions.length > 0) return ep.qualityOptions;
+                }
+            }
 
             return normalizeStreamResponse(streamData);
         } catch (e: any) {

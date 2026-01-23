@@ -256,6 +256,8 @@ export const GET: RequestHandler = async ({ url, params, platform, request }) =>
                 actionPath = 'randomdrama';
             } else if (actionPath === 'detail') {
                 actionPath = 'allepisode';
+            } else if (actionPath === 'stream') {
+                actionPath = 'allepisode';
             }
 
             const queryString = queryParams.toString();
