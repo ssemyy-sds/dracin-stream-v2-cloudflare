@@ -3,6 +3,7 @@
   import { page } from "$app/stores";
   import "../app.css";
   import Navbar from "$lib/components/Navbar.svelte";
+  import RateLimitNotification from "$lib/components/RateLimitNotification.svelte";
   import { favorites } from "$lib/stores/favorites";
   import { activeProvider } from "$lib/stores/apiState";
 
@@ -14,6 +15,9 @@
 </script>
 
 <div class="min-h-screen bg-brand-black flex flex-col">
+  <!-- Rate Limit Notification -->
+  <RateLimitNotification />
+
   <Navbar />
 
   <main class="flex-1 pt-16">

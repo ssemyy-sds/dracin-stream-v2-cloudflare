@@ -8,6 +8,8 @@ import type {
 import { normalizeDrama, normalizeEpisode } from './normalizers';
 import { fixUrl } from '$lib/utils/helpers';
 import { activeProvider } from '$lib/stores/apiState';
+import { fetchWithRateLimit, debounceAsync } from './fetchWrapper';
+import { rateLimitStore } from '$lib/stores/rateLimitStore';
 
 // API base URL (through Cloudflare Worker proxy)
 const API_BASE = '/api/proxy';
@@ -67,40 +69,60 @@ function getList(data: any): any[] {
 }
 
 /**
- * Internal fetch wrapper
+ * Internal fetch wrapper with rate limiting, caching, and retry logic
  */
 async function internalFetch(url: string, endpoint: string): Promise<{ data: any, providerId: string }> {
-    const response = await fetch(url);
-    const providerId = response.headers.get('X-Active-Provider') || 'unknown';
+    try {
+        // Use the rate-limited fetch wrapper
+        const response = await fetchWithRateLimit(url, undefined, {
+            cacheKey: `${endpoint}:${url}`,
+            cacheable: true
+        });
 
-    // Update store
-    activeProvider.set(providerId);
+        const providerId = response.headers.get('X-Active-Provider') || 'unknown';
 
-    debugLog(`Response Status: ${response.status} for ${endpoint} from ${providerId}`);
+        // Update store
+        activeProvider.set(providerId);
 
-    if (!response.ok) {
-        let errorDetail = `HTTP ${response.status}`;
-        try {
-            const errorData = await response.json();
-            errorDetail = errorData.detail || errorData.error || errorDetail;
-            console.error(`[API Service] Error for ${endpoint}:`, errorData);
-        } catch {
-            const errorText = await response.text().catch(() => 'No error text');
-            errorDetail = errorText.substring(0, 200);
+        debugLog(`Response Status: ${response.status} for ${endpoint} from ${providerId}`);
+
+        if (!response.ok) {
+            let errorDetail = `HTTP ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorDetail = errorData.detail || errorData.error || errorDetail;
+                console.error(`[API Service] Error for ${endpoint}:`, errorData);
+
+                // Handle rate limit error in UI
+                if (response.status === 429) {
+                    const retryAfter = response.headers.get('Retry-After');
+                    const retryMs = retryAfter ? parseInt(retryAfter) * 1000 : 60000;
+                    rateLimitStore.setRateLimited(true, retryMs);
+                }
+            } catch {
+                const errorText = await response.text().catch(() => 'No error text');
+                errorDetail = errorText.substring(0, 200);
+            }
+            throw new Error(`API error (${response.status}): ${errorDetail}`);
         }
-        throw new Error(`API error (${response.status}): ${errorDetail}`);
+
+        const data = await response.json();
+
+        // Validate response structure
+        const validation = validateResponse(data, endpoint);
+        if (!validation.valid) {
+            console.warn(`[API Service] Validation warning for ${endpoint}: ${validation.error}`);
+        }
+
+        debugLog(`Success from ${providerId} for ${endpoint}`);
+        return { data, providerId };
+    } catch (error: any) {
+        // Handle queue overflow gracefully
+        if (error.isQueueOverflow) {
+            rateLimitStore.setQueueFull();
+        }
+        throw error;
     }
-
-    const data = await response.json();
-
-    // Validate response structure
-    const validation = validateResponse(data, endpoint);
-    if (!validation.valid) {
-        console.warn(`[API Service] Validation warning for ${endpoint}: ${validation.error}`);
-    }
-
-    debugLog(`Success from ${providerId} for ${endpoint}`);
-    return { data, providerId };
 }
 
 /**
@@ -536,6 +558,12 @@ export async function searchDramas(query: string): Promise<Drama[]> {
     const list = getList(data);
     return list.map((item: any) => normalizeDrama(item, providerId));
 }
+
+/**
+ * Debounced search for UI-triggered calls (300ms debounce)
+ * Use this for search inputs to avoid excessive API calls
+ */
+export const searchDramasDebounced = debounceAsync(searchDramas, 300);
 
 /**
  * Get dramas by category type

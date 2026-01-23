@@ -1,6 +1,6 @@
 # Git commit script using GitHub Desktop's git
 $gitPath = "C:\Users\suryanata\AppData\Local\GitHubDesktop\app-3.5.4\resources\app\git\cmd\git.exe"
-$commitMessage = "Fix: api_backup4 watch page stream mapping and replace broken placeholder image"
+$commitMessage = "feat: Add robust API rate limiting system with token bucket, caching, and retries"
 
 Write-Host "Adding files..." -ForegroundColor Cyan
 & $gitPath add .
