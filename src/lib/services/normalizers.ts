@@ -116,8 +116,8 @@ export function normalizeEpisode(data: any, providerId: string): Episode {
         });
     }
 
-    // Handle CDN lists from Secondary API
-    if (providerId === 'api_secondary' && data.cdnList) {
+    // Handle CDN lists (Common in Dramabox based APIs: Secondary, Backup4, etc)
+    if (data.cdnList && Array.isArray(data.cdnList)) {
         // Logic to extract videoUrl from cdnList
         // This matches logic from previous api-secondary.ts
         if (Array.isArray(data.cdnList)) {
